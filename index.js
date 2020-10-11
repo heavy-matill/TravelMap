@@ -1,5 +1,5 @@
 import 'ol/ol.css';
-var ol = require('ol');
+import XYZ from 'ol/source/XYZ';
 import { transform } from 'ol/proj';
 import { Map, View } from 'ol';
 import Circle from 'ol/geom/Circle';
@@ -27,13 +27,6 @@ var styles = {
         stroke: new Stroke({
             color: 'green',
             width: 1,
-        }),
-    }),
-    'Shadow': new Style({
-        stroke: new Stroke({
-            color: 'black',
-            width: 3,
-            opacity: 0.5
         }),
     }),
     'MultiLineString': new Style({
@@ -110,15 +103,7 @@ var styleFunctionShadow = function (feature) {
 // Flight path Layer
 var vectorSource = new VectorSource();
 var vectorSourceShadows = new VectorSource();
-//vectorSource.addFeature(new Feature(new Circle([5e6, 7e6], 1e6)));
-/*vectorSource.addFeature(new Feature(new LineString([
-    [-5e6, -5e6],
-    [0, -5e6]])));
-var lin = [[50.935173, 6.953101], [-20.244959, 57.561768]]*/
-var lin = [[-20.244959, 57.561768], [50.935173, 6.953101]] /*UTM Easting	356,176.13
-UTM Northing	5,644,611.01
-UTM Easting	558,673.15
-UTM Northing	7,761,311.62*/
+var lin = [[-20.244959, 57.561768], [50.935173, 6.953101]]
 
 var arcGenerator = new arc.GreatCircle(
     { x: lin[0][1], y: lin[0][0] },
@@ -158,7 +143,13 @@ const map = new Map({
     layers: [
         new TileLayer({
             source: new OSM()
-        }),
+        }),  
+        /*new TileLayer({
+            source: new XYZ({
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                maxZoom: 19
+            })
+        }),*/
         vectorLayerShadows,
         vectorLayer
     ],
@@ -167,77 +158,6 @@ const map = new Map({
         zoom: 0
     })
 });
-
-/*function lineAirplane(points, fac) {
-    var n = points.length
-    var points_out = points
-    for (var i = 1; i < n; i++) {
-        // equidistant points on straight line
-        points_out[i] = arAdd(points[0], arMul(arSub(points[n - 1], points[0]), i / n))
-        // add distance
-        points_out[i] = arAdd(points_out[i], arMul(arSub(points[i], points_out[i]), fac))
-    }
-    return points_out
-}
-
-function arSub(A, B) {
-    for (var i = 0; i < A.length; i++) {
-        A[i] -= B[i]
-    }
-    return A
-}
-function arAdd(A, B) {
-    for (var i = 0; i < A.length; i++) {
-        A[i] += B[i]
-    }
-    return A
-}
-function arMul(A, fac) {
-    for (var i = 0; i < A.length; i++) {
-        A[i] *= fac
-    }
-    return A
-}
-
-function listToPointList(li) {
-    var poli = []
-    for (var i = 0; i < li.length / 2; i++) {
-        poli.push([li[i * 2], li[i * 2 + 1]])
-    }
-    return poli
-}
-
-function pointListToList(poli) {
-    var li = []
-    for (var i = 0; i < poli.length; i++) {
-        li.push(poli[i][0])
-        li.push(poli[i][1])
-    }
-    return li
-}*/
-
-function rotatePoint(p_x, p_y, angle, b_x, b_y) {
-    var x = p_x - b_x
-    var y = p_y - b_y
-    p_x = x * Math.cos(angle) - y * Math.sin(angle)
-    p_y = x * Math.sin(angle) + y * Math.cos(angle)
-    p_x += b_x
-    p_y += b_y
-    return [p_x, p_y]
-}
-
-function rotateLine(li, angle) {   
-    var rotli = [] 
-    var rotpoint = []
-    var len = li.length / 2
-    for (var i = 0; i < len; i++) {
-        var angle_bowed = angle*Math.pow(1- (i*2/(len-1)-1),4)
-        rotpoint = rotatePoint(li[i * 2], li[i * 2 + 1], angle_bowed, li[0], li[1])
-        rotli.push(rotpoint[0])
-        rotli.push(rotpoint[1])
-    }
-    return rotli
-}
 
 function shiftPoint(p_x, p_y, distance, b_x, b_y) {
     var x = p_x - b_x
