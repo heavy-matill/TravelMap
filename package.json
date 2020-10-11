@@ -1,0 +1,21 @@
+{
+  "name": "travelmap",
+  "version": "1.0.0",
+  "description": "",
+  "main": "arc.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "parcel index.html",
+    "build": "parcel build --public-url . index.html"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "arc": "^0.1.1",
+    "ol": "^6.4.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.11.6",
+    "babel-eslint": "^10.1.0"
+  }
+}

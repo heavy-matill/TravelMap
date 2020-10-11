@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/css/ol.css" type="text/css">
+    <style>
+        .map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>
+    <script src="./arc.js/arc.js"></script>
+    <title>OpenLayers example</title>
+</head>
+
+<body>
+    <h2>My Map</h2>
+    <div id="map" class="map"></div>
+    <script type="text/javascript">
+        var map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                })
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([37.41, 8.82]),
+                zoom: 4
+            })
+        });
+
+        // Satellite Layer
+        var worldImagery = new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                maxZoom: 19
+            })
+        });
+        map.addLayer(worldImagery);
+
+        // Lines Layer
+        var points = [[-89.8802, 32.5804], [-95.04286, 46.9235]];
+
+        
+        for (var i = 0; i < points.length; i++) {
+            points[i] = ol.proj.transform(points[i], 'EPSG:4326', 'EPSG:3857');
+        }
+
+        var featureLine = new ol.Feature({
+            geometry: new ol.geom.LineString(points)
+        });
+
+        var vectorLine = new ol.source.Vector({});
+        vectorLine.addFeature(featureLine);
+
+        var vectorLineLayer = new ol.layer.Vector({
+            source: vectorLine,
+            style: new ol.style.Style({
+                fill: new ol.style.Fill({ color: '#00FF00', weight: 4 }),
+                stroke: new ol.style.Stroke({ color: '#00FF00', width: 2 })
+            })
+        });
+        map.addLayer(vectorLineLayer);
+
+        // GeoJSON Layer
+        var generator = new arc.GreatCircle({x: -90, y: -70},{x: 89, y: 70}); // points to connect
+        var n = 50; // n of points
+        var coords = generator.Arc(n).geometries[0].coords;
+        var geojson = {"type":"Feature","geometry":{"type":"LineString","coordinates": coords},"properties":null } ;
+        
+        import {OSM, Vector as VectorSource} from 'ol/source';
+        var vectorSource = new VectorSource({
+            features: new GeoJSON().readFeatures(geojson),
+        });
+
+        vectorSource.addFeature(new Feature(new Circle([5e6, 7e6], 1e6)));
+
+        var vectorLayer = new VectorLayer({
+        source: vectorSource//,
+        //style: styleFunction,
+        });
+        map.addLayer(vectorLayer);
+    </script>
+</body>
+
+</html>
