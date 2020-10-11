@@ -16,14 +16,24 @@ import Icon from 'ol/style/Icon';
 import { makeRegular } from 'ol/geom/Polygon';
 var arc = require('arc');
 
+/*
+Orte: https://www.latlong.net/place/cologne-germany-14658.html
+    Köln: [50.935173, 6.953101] 
+    Mauritius: [-20.244959, 57.561768]
+    Po
+*/
 
-var lin = [[50.935173, 6.953101], [-20.244959, 57.561768], [0, 0]]
-var b_air = [true, false, false]
+/* Testdatavar lin = [[50.935173, 6.953101], [-20.244959, 57.561768], [0, 0],[50.935173, 6.953101]]
+var b_air = [true, false, false, true] */
+
+/* 2020 Atlantik Campen */
+var lin = [[50.935173, 6.953101], [49.303449, 1.158169], [43.951503,-1.363952], [46.434123 ,1.611364], [50.935173, 6.953101]]
+var b_air = lin == 0
 var color = "#3399cc"
 
 // Marker with number
 var vectorSourceIcon = new VectorSource();
-for (var i = 1; i < lin.length; i++) {
+for (var i = 1; i < lin.length-1; i++) {
     var iconNumberFeature = new Feature({
         geometry: new Point([lin[i][1], lin[i][0]]).transform('EPSG:4326', 'EPSG:3857'),
         type: 'icon',
@@ -54,7 +64,7 @@ var vectorLayerIcon = new VectorLayer({
     source: vectorSourceIcon,
 });
 
-// Flight shadows
+// Lines
 var vectorSourceLines = new VectorSource();
 var vectorSourceLineShadows = new VectorSource();
 var lineStyle = new Style({
