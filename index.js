@@ -27,13 +27,14 @@ Orte: https://www.latlong.net/place/cologne-germany-14658.html
 var b_air = [true, false, false, true] */
 
 /* 2020 Atlantik Campen */
-var lin = [[50.935173, 6.953101], [49.303449, 1.158169], [43.951503,-1.363952], [46.434123 ,1.611364], [50.935173, 6.953101]]
+var lin = [[50.935173, 6.953101], [49.303449, 1.158169], [43.951503, -1.363952], [46.434123, 1.611364], [50.935173, 6.953101]]
+var loc = ['Köln', 'Pont de l\'Arche', 'Saint-Girons Plage', 'Éguzon-Chantôme', 'Köln']
 var b_air = lin == 0
 var color = "#3399cc"
 
 // Marker with number
 var vectorSourceIcon = new VectorSource();
-for (var i = 1; i < lin.length-1; i++) {
+for (var i = 1; i < lin.length - 1; i++) {
     var iconNumberFeature = new Feature({
         geometry: new Point([lin[i][1], lin[i][0]]).transform('EPSG:4326', 'EPSG:3857'),
         type: 'icon',
@@ -54,7 +55,7 @@ for (var i = 1; i < lin.length-1; i++) {
             fill: new Fill({
                 color: '#fff',
             }),
-            font: 'bold sans-serif'
+            font: 'bold 14px sans-serif'
         }),
     });
     iconNumberFeature.setStyle(iconNumberStyle)
@@ -89,7 +90,8 @@ var styleLine = {
     'LineString': lineStyle
 };
 var styleFunctionLine = function (feature) {
-    return styleLine[feature.getGeometry().getType()];};
+    return styleLine[feature.getGeometry().getType()];
+};
 
 var numPoints = 100
 for (var i = 0; i < lin.length - 1; i++) {
@@ -105,8 +107,8 @@ for (var i = 0; i < lin.length - 1; i++) {
             geometry: line,
             finished: false
         })
-        vectorSourceLineShadows.addFeature(lineShadowFeature)        
-        
+        vectorSourceLineShadows.addFeature(lineShadowFeature)
+
         var lineAir = new LineString(arcLine.geometries[0].coords);
         lineAir.transform('EPSG:4326', 'EPSG:3857');
         lineAir.flatCoordinates = shiftLine(lineAir.flatCoordinates, 5e5)
@@ -151,14 +153,14 @@ const map = new Map({
                 maxZoom: 19
             })
         }),
+        vectorLayerLineShadows,
+        vectorLayerLines,
         new TileLayer({
             source: new XYZ({
                 url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
                 maxZoom: 19
             })
         }),
-        vectorLayerLineShadows,
-        vectorLayerLines,
         vectorLayerIcon,
     ],
     view: new View({
@@ -189,3 +191,143 @@ function shiftLine(li, distance) {
     }
     return rotli
 }
+
+var { createCanvas, loadImage } = require('canvas');
+var canvas = createCanvas(800, 800);
+var ctx = canvas.getContext('2d');
+
+
+// draw box
+// Draw opaque blue circle
+var dist = 25
+var max_width = 100
+for (var i = 1; i < lin.length - 1; i++) {
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    ctx.arc(dist*0.75, (i-0.25) * dist, 10, 0, 2 * Math.PI, true);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.strokeStyle = "#fff";
+    ctx.arc(dist*0.75, (i-0.25) * dist, 10, 0, 2 * Math.PI, true);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.fillStyle = "white";
+    ctx.font = "bold 14px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(i.toString(), dist*0.75, (i-0.25) * dist + 5);
+    //ctx.textBaseline = "middle";
+
+    ctx.beginPath();
+    ctx.fillStyle = "black";
+    ctx.font = "bold 14px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(loc[i], dist*1.25, (i-0.25) * dist + 5);
+    max_width = Math.max(ctx.measureText(loc[i]).width, max_width)
+    console.log(max_width)
+
+}
+CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    this.beginPath();
+    this.moveTo(x+r, y);
+    this.arcTo(x+w, y,   x+w, y+h, r);
+    this.arcTo(x+w, y+h, x,   y+h, r);
+    this.arcTo(x,   y+h, x,   y,   r);
+    this.arcTo(x,   y,   x+w, y,   r);
+    this.closePath();
+    return this;
+  }
+  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.globalCompositeOperation='destination-over';
+  ctx.roundRect(dist*0.2, dist*0.2, max_width+ dist*1.2, (lin.length-2) * dist + 0.1*dist, 10).fill(); //or .fill() for a filled rect
+//loadImage('data/icon.png').then((image) => {
+//   ctx.drawImage(image, 50, 0, 70, 70)
+
+//Create the element using the createElement method.
+var myDiv = document.createElement("div");
+
+//Set its unique ID.
+myDiv.id = 'div_canvas';
+
+//Add your content to the DIV
+myDiv.innerHTML = '<img src="' + canvas.toDataURL() + '" />';
+
+//Finally, append the element to the HTML body
+document.body.appendChild(myDiv);
+var download = document.getElementById("download");
+var image = canvas.toDataURL().replace("image/png", "image/octet-stream");
+download.setAttribute("href", image);
+window.open(canvas.toDataURL('image/png'));
+//Appending HTML by replacing the document.body.innerHTML attribute
+ //document.body.innerHTML = document.body.innerHTML +'<img src="' + canvas.toDataURL() + '" />';
+//})
+
+
+    // save canvas image as data url (png format by default)
+   // var dataURL = canvas.toDataURL();
+
+    // set canvasImg image src to dataURL
+    // so it can be saved as an image
+    //document.getElementById('canvasImg').src = dataURL;
+
+/*var ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
+
+
+
+
+Legend?
+// Set shadow styles
+ctx.shadowOffsetX = 0;
+ctx.shadowOffsetY = 0;
+ctx.shadowBlur = 10;
+ctx.shadowColor = "rgba(0, 0, 0, 1)";
+
+// Set text
+ctx.fillStyle = "black";
+ctx.font = "72px Segoe UI";
+ctx.fillText("Canvas", 90, 60);
+
+// Create gradient
+var gradient = ctx.createLinearGradient(0, 0, 250, 0);
+gradient.addColorStop(0, "#0080FF");
+gradient.addColorStop(1, "#FFFFFF");
+
+
+// Add gradient fill to a rectangle
+ctx.fillStyle = gradient;
+ctx.fillRect(25, 100, 340, 20);
+
+// Draw transparent blue circles
+ctx.beginPath();
+ctx.fillStyle = "rgba(30, 144, 255, 0.25)";
+ctx.arc(50, 180, 30, 0, 2 * Math.PI, true);
+ctx.fill();
+
+ctx.beginPath();
+ctx.fillStyle = "rgba(30, 144, 255, 0.5)";
+ctx.arc(150, 180, 30, 0, 2 * Math.PI, true);
+ctx.fill();
+
+ctx.beginPath();
+ctx.fillStyle = "rgba(30, 144, 255, 0.75)";
+ctx.arc(250, 180, 30, 0, 2 * Math.PI, true);
+ctx.fill();
+
+// Draw opaque blue circle
+ctx.beginPath();
+ctx.fillStyle = "#3399cc";
+ctx.arc(350, 180, 10, 0, 2 * Math.PI, true);
+ctx.fill();
+ctx.beginPath();
+ctx.strokeStyle = "#fff";
+ctx.arc(350, 180, 10, 0, 2 * Math.PI, true);
+ctx.stroke();
+ctx.beginPath();
+ctx.fillStyle = "white";
+ctx.font = "bold 14px sans-serif";
+ctx.textAlign = "center";
+ctx.fillText("12", 350, 185);
+ctx.textBaseline = "middle";
+*/

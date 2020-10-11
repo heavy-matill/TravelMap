@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "arc": "^0.1.1",
+    "canvas": "^2.6.1",
     "ol": "^6.4.3"
   },
   "devDependencies": {
