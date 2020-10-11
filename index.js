@@ -1,88 +1,69 @@
 import 'ol/ol.css';
+import Point from 'ol/geom/Point'
 import XYZ from 'ol/source/XYZ';
-import { transform } from 'ol/proj';
 import { Map, View } from 'ol';
 import Circle from 'ol/geom/Circle';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import GeoJSON from 'ol/format/GeoJSON';
 import Feature from 'ol/Feature';
-import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
+import { Circle as CircleStyle, Fill, Stroke, Style, Text } from 'ol/style';
 import { Vector as VectorSource } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import LineString from 'ol/geom/LineString';
+import Overlay from 'ol/Overlay';
+import Icon from 'ol/style/Icon';
+import { makeRegular } from 'ol/geom/Polygon';
 var arc = require('arc');
 
-var image = new CircleStyle({
-    radius: 5,
-    fill: null,
-    stroke: new Stroke({ color: 'red', width: 1 }),
-});
 
-var styles = {
-    'Point': new Style({
-        image: image,
-    }),
-    'LineString': new Style({
-        stroke: new Stroke({
-            color: 'green',
-            width: 1,
-        }),
-    }),
-    'MultiLineString': new Style({
-        stroke: new Stroke({
-            color: 'green',
-            width: 1,
-        }),
-    }),
-    'MultiPoint': new Style({
-        image: image,
-    }),
-    'MultiPolygon': new Style({
-        stroke: new Stroke({
-            color: 'yellow',
-            width: 1,
-        }),
-        fill: new Fill({
-            color: 'rgba(255, 255, 0, 0.1)',
-        }),
-    }),
-    'Polygon': new Style({
-        stroke: new Stroke({
-            color: 'blue',
-            lineDash: [4],
-            width: 3,
-        }),
-        fill: new Fill({
-            color: 'rgba(0, 0, 255, 0.1)',
-        }),
-    }),
-    'GeometryCollection': new Style({
-        stroke: new Stroke({
-            color: 'magenta',
-            width: 2,
-        }),
-        fill: new Fill({
-            color: 'magenta',
-        }),
+var lin = [[50.935173, 6.953101], [-20.244959, 57.561768], [0, 0]]
+var b_air = [true, false, false]
+var color = "#3399cc"
+
+// Marker with number
+var vectorSourceIcon = new VectorSource();
+for (var i = 1; i < lin.length; i++) {
+    var iconNumberFeature = new Feature({
+        geometry: new Point([lin[i][1], lin[i][0]]).transform('EPSG:4326', 'EPSG:3857'),
+        type: 'icon',
+    });
+    var iconNumberStyle = new Style({
         image: new CircleStyle({
             radius: 10,
-            fill: null,
+            snapToPixel: false,
             stroke: new Stroke({
-                color: 'magenta',
+                color: '#fff',
+            }),
+            fill: new Fill({
+                color: color,
             }),
         }),
-    }),
-    'Circle': new Style({
-        stroke: new Stroke({
-            color: 'red',
-            width: 2,
+        text: new Text({
+            text: i.toString(),
+            fill: new Fill({
+                color: '#fff',
+            }),
+            font: 'bold sans-serif'
         }),
-        fill: new Fill({
-            color: 'rgba(255,0,0,0.2)',
-        }),
+    });
+    iconNumberFeature.setStyle(iconNumberStyle)
+    vectorSourceIcon.addFeature(iconNumberFeature)
+}
+var vectorLayerIcon = new VectorLayer({
+    source: vectorSourceIcon,
+});
+
+// Flight shadows
+var vectorSourceLines = new VectorSource();
+var vectorSourceLineShadows = new VectorSource();
+var lineStyle = new Style({
+    stroke: new Stroke({
+        color: color,
+        width: 3,
     }),
-};
+})
+
 var styleShadow = {
     'LineString': new Style({
         stroke: new Stroke({
@@ -91,67 +72,84 @@ var styleShadow = {
         }),
     })
 };
-
-var styleFunction = function (feature) {
-    return styles[feature.getGeometry().getType()];
-};
-
 var styleFunctionShadow = function (feature) {
     return styleShadow[feature.getGeometry().getType()];
 };
+var styleLine = {
+    'LineString': lineStyle
+};
+var styleFunctionLine = function (feature) {
+    return styleLine[feature.getGeometry().getType()];};
+
+var numPoints = 100
+for (var i = 0; i < lin.length - 1; i++) {
+    var arcGenerator = new arc.GreatCircle(
+        { x: lin[i][1], y: lin[i][0] },
+        { x: lin[i + 1][1], y: lin[i + 1][0] }
+    );
+    var arcLine = arcGenerator.Arc(numPoints, { offset: 10 });
+    var line = new LineString(arcLine.geometries[0].coords);
+    line.transform('EPSG:4326', 'EPSG:3857');
+    if (b_air[i]) {
+        var lineShadowFeature = new Feature({
+            geometry: line,
+            finished: false
+        })
+        vectorSourceLineShadows.addFeature(lineShadowFeature)        
+        
+        var lineAir = new LineString(arcLine.geometries[0].coords);
+        lineAir.transform('EPSG:4326', 'EPSG:3857');
+        lineAir.flatCoordinates = shiftLine(lineAir.flatCoordinates, 5e5)
+
+        var lineFeature = new Feature({
+            geometry: lineAir,
+            finished: false,
+            style: lineStyle
+        })
+        vectorSourceLines.addFeature(lineFeature)
+    } else {
+        var lineFeature = new Feature({
+            geometry: line,
+            finished: false,
+            style: lineStyle
+        })
+        vectorSourceLines.addFeature(lineFeature)
+    }
+}
+var vectorLayerLineShadows = new VectorLayer({
+    source: vectorSourceLineShadows,
+    style: styleFunctionShadow
+});
+
+var vectorLayerLines = new VectorLayer({
+    source: vectorSourceLines,
+    style: styleFunctionLine
+});
+
 
 // Flight path Layer
-var vectorSource = new VectorSource();
-var vectorSourceShadows = new VectorSource();
-var lin = [[-20.244959, 57.561768], [50.935173, 6.953101]]
-
-var arcGenerator = new arc.GreatCircle(
-    { x: lin[0][1], y: lin[0][0] },
-    { x: lin[1][1], y: lin[1][0] }
-);
-var numPoints = 100
-var arcLine = arcGenerator.Arc(numPoints, { offset: 10 });
-var line = new LineString(arcLine.geometries[0].coords);
-var line2 = new LineString(arcLine.geometries[0].coords);
-line.transform('EPSG:4326', 'EPSG:3857');
-console.log(line)
-line2.transform('EPSG:4326', 'EPSG:3857');
-vectorSourceShadows.addFeature(new Feature({
-    geometry: line,
-    finished: false,
-}))
-line2.flatCoordinates = shiftLine(line2.flatCoordinates, 5e5)
-console.log(line2.flatCoordinates)
-vectorSource.addFeature(new Feature({
-    geometry: line2,
-    finished: false,
-}))
-
-
-var vectorLayerShadows = new VectorLayer({
-    source: vectorSourceShadows,
-    style: styleFunctionShadow,
-});
-
-var vectorLayer = new VectorLayer({
-    source: vectorSource,
-    style: styleFunction,
-});
 
 const map = new Map({
     target: 'map',
     layers: [
-        new TileLayer({
-            source: new OSM()
-        }),  
         /*new TileLayer({
+            source: new OSM()
+        }),*/
+        new TileLayer({
             source: new XYZ({
                 url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                 maxZoom: 19
             })
-        }),*/
-        vectorLayerShadows,
-        vectorLayer
+        }),
+        new TileLayer({
+            source: new XYZ({
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+                maxZoom: 19
+            })
+        }),
+        vectorLayerLineShadows,
+        vectorLayerLines,
+        vectorLayerIcon,
     ],
     view: new View({
         center: [0, 0],
@@ -162,9 +160,9 @@ const map = new Map({
 function shiftPoint(p_x, p_y, distance, b_x, b_y) {
     var x = p_x - b_x
     var y = p_y - b_y
-    var alpha = Math.atan(y/x)
-    p_x -= Math.sin(alpha)*distance
-    p_y += Math.abs(Math.cos(alpha))*distance
+    var alpha = Math.atan(y / x)
+    p_x -= Math.sin(alpha) * distance
+    p_y += Math.abs(Math.cos(alpha)) * distance
     return [p_x, p_y]
 }
 
@@ -173,8 +171,8 @@ function shiftLine(li, distance) {
     var rotpoint = []
     var len = li.length / 2
     for (var i = 1; i < len; i++) {
-        var fac = 1- Math.pow((i*2/(len-1)-1),8)
-        var distance_bowed = distance*fac
+        var fac = 1 - Math.pow((i * 2 / (len - 1) - 1), 8)
+        var distance_bowed = distance * fac
         rotpoint = shiftPoint(li[i * 2], li[i * 2 + 1], distance_bowed, li[0], li[1])
         rotli.push(rotpoint[0])
         rotli.push(rotpoint[1])
