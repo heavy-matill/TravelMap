@@ -137,19 +137,25 @@ var vectorLayer = new VectorLayer({
     source: vectorSource,
     style: styleFunction,
 });
-
+var key = 'zwI2ps5Xy242M6qPNrMd'
 const map = new Map({
     target: 'map',
     layers: [
-        new TileLayer({
+        /*new TileLayer({
             source: new OSM()
-        }),  
+        }),  */
         /*new TileLayer({
             source: new XYZ({
                 url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                 maxZoom: 19
             })
         }),*/
+        new TileLayer({
+            source: new XYZ({
+              url: 'https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=' + key,
+              maxZoom: 20,
+            })
+        }),
         vectorLayerShadows,
         vectorLayer
     ],

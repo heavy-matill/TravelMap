@@ -12,7 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "arc": "^0.1.1",
-    "ol": "^6.4.3"
+    "ol": "^6.4.3",
+    "parcel": "^1.12.4"
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",
