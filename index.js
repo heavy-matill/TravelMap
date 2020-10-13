@@ -13,6 +13,9 @@ import { Vector as VectorLayer } from 'ol/layer';
 import LineString from 'ol/geom/LineString';
 var arc = require('arc');
 
+require('dotenv').config();
+var maptiler_key = process.env.MAPTILER_KEY
+
 var image = new CircleStyle({
     radius: 5,
     fill: null,
@@ -137,7 +140,6 @@ var vectorLayer = new VectorLayer({
     source: vectorSource,
     style: styleFunction,
 });
-var key = 'zwI2ps5Xy242M6qPNrMd'
 const map = new Map({
     target: 'map',
     layers: [
@@ -152,7 +154,7 @@ const map = new Map({
         }),*/
         new TileLayer({
             source: new XYZ({
-              url: 'https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=' + key,
+              url: 'https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=' + maptiler_key,
               maxZoom: 20,
             })
         }),
