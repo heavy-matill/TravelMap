@@ -19,7 +19,9 @@ var fs = require('fs');
 
 var trip = JSON.parse(fs.readFileSync('2019_china.json'))
 var locations = JSON.parse(fs.readFileSync('locations.json'))
-console.log(trip)
+
+require('dotenv').config();
+var maptiler_key = process.env.MAPTILER_KEY
 
 /*
 Orte: https://www.latlong.net/place/cologne-germany-14658.html
@@ -164,7 +166,7 @@ const map = new Map({
         /*new TileLayer({
             source: new OSM()
         }),*/
-        new TileLayer({
+        /*new TileLayer({
             source: new XYZ({
                 url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                 maxZoom: 19
@@ -177,7 +179,15 @@ const map = new Map({
                 url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
                 maxZoom: 19
             })
+        }),*/
+        new TileLayer({
+            source: new XYZ({
+              url: 'https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=' + maptiler_key,
+              maxZoom: 20,
+            })
         }),
+        vectorLayerShadows,
+        vectorLayer,
         vectorLayerIcon,
     ],
     view: new View({
