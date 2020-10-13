@@ -1,0 +1,51 @@
+[
+    {
+        "name": "Hannover",
+        "b_air": true,
+        "b_draw": false
+    },
+    {
+        "name": "Shanghai"
+    },
+    {
+        "name": "Shuzhou"
+    },
+    {
+        "name": "Shanghai",
+        "b_air": true
+    },
+    {
+        "name": "Changchun",
+        "b_air": true
+    },
+    {
+        "name": "Shenzhen",
+        "b_air": true
+    },
+    {
+        "name": "Shanghai",
+        "b_air": true
+    },
+    {
+        "name": "Ningbo"
+    },
+    {
+        "name": "Jinhua"
+    },
+    {
+        "name": "Beijing",
+        "b_air": true
+    },
+    {
+        "name": "Tianjin",
+        "b_air": true
+    },
+    {
+        "name": "Changchun",
+        "b_air": true
+    },
+    {
+        "name": "München",
+        "b_draw": false
+    }
+]

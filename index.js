@@ -15,6 +15,11 @@ import Overlay from 'ol/Overlay';
 import Icon from 'ol/style/Icon';
 import { makeRegular } from 'ol/geom/Polygon';
 var arc = require('arc');
+var fs = require('fs');
+
+var trip = JSON.parse(fs.readFileSync('2019_china.json'))
+var locations = JSON.parse(fs.readFileSync('locations.json'))
+console.log(trip)
 
 /*
 Orte: https://www.latlong.net/place/cologne-germany-14658.html
@@ -26,10 +31,22 @@ Orte: https://www.latlong.net/place/cologne-germany-14658.html
 /* Testdatavar lin = [[50.935173, 6.953101], [-20.244959, 57.561768], [0, 0],[50.935173, 6.953101]]
 var b_air = [true, false, false, true] */
 
-/* 2020 Atlantik Campen */
+/* 2019 China */
+var lin = [[52.375893,9.732010],[31.230391, 121.473701],[31.302420, 120.618070],[31.230391, 121.473701],[43.817070, 125.323547],
+[ 22.5431, 114.0579],[31.230391, 121.473701,],[29.8683, 121.5440, ],[29.0792, 119.6474, ],[39.9042, 116.4074, ],
+[39.3434, 117.3616, ],[43.817070, 125.323547, ],[52.375893,9.732010],]
+var loc = ['Hannover', 'Shanghai', 'Shuzhou', 'Shanghai', 'Changchun', 
+'Shenzhen', 'Shanghai', 'Ningbo', 'Jinhua', 'Beijing', 
+'Tianjin', 'Changchun', 'München']
+var b_air = [true, false, false, true, true, 
+    true, true, false, false, true,
+    true, true, true]
+var b_draw = [false, true, true, false, true, true, false]
+/* 2020 Atlantik Campen 
 var lin = [[50.935173, 6.953101], [49.303449, 1.158169], [43.951503, -1.363952], [46.434123, 1.611364], [50.935173, 6.953101]]
 var loc = ['Köln', 'Pont de l\'Arche', 'Saint-Girons Plage', 'Éguzon-Chantôme', 'Köln']
 var b_air = lin == 0
+var b_draw = !b_air*/
 var color = "#3399cc"
 
 // Marker with number
@@ -182,6 +199,7 @@ function shiftLine(li, distance) {
     var rotli = [li[0], li[1]]
     var rotpoint = []
     var len = li.length / 2
+    distance = distance / 1e7 * Math.sqrt(Math.pow(li[0] - li[len*2-2],2)+Math.pow(li[1] - li[len*2-1],2))
     for (var i = 1; i < len; i++) {
         var fac = 1 - Math.pow((i * 2 / (len - 1) - 1), 8)
         var distance_bowed = distance * fac
@@ -193,14 +211,14 @@ function shiftLine(li, distance) {
 }
 
 var { createCanvas, loadImage } = require('canvas');
-var canvas = createCanvas(800, 800);
+var dist = 25
+var max_width = 100
+var canvas = createCanvas(300, (lin.length-1) * dist);
 var ctx = canvas.getContext('2d');
 
 
 // draw box
 // Draw opaque blue circle
-var dist = 25
-var max_width = 100
 for (var i = 1; i < lin.length - 1; i++) {
     ctx.beginPath();
     ctx.fillStyle = color;
@@ -260,74 +278,3 @@ var download = document.getElementById("download");
 var image = canvas.toDataURL().replace("image/png", "image/octet-stream");
 download.setAttribute("href", image);
 window.open(canvas.toDataURL('image/png'));
-//Appending HTML by replacing the document.body.innerHTML attribute
- //document.body.innerHTML = document.body.innerHTML +'<img src="' + canvas.toDataURL() + '" />';
-//})
-
-
-    // save canvas image as data url (png format by default)
-   // var dataURL = canvas.toDataURL();
-
-    // set canvasImg image src to dataURL
-    // so it can be saved as an image
-    //document.getElementById('canvasImg').src = dataURL;
-
-/*var ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
-
-
-
-
-Legend?
-// Set shadow styles
-ctx.shadowOffsetX = 0;
-ctx.shadowOffsetY = 0;
-ctx.shadowBlur = 10;
-ctx.shadowColor = "rgba(0, 0, 0, 1)";
-
-// Set text
-ctx.fillStyle = "black";
-ctx.font = "72px Segoe UI";
-ctx.fillText("Canvas", 90, 60);
-
-// Create gradient
-var gradient = ctx.createLinearGradient(0, 0, 250, 0);
-gradient.addColorStop(0, "#0080FF");
-gradient.addColorStop(1, "#FFFFFF");
-
-
-// Add gradient fill to a rectangle
-ctx.fillStyle = gradient;
-ctx.fillRect(25, 100, 340, 20);
-
-// Draw transparent blue circles
-ctx.beginPath();
-ctx.fillStyle = "rgba(30, 144, 255, 0.25)";
-ctx.arc(50, 180, 30, 0, 2 * Math.PI, true);
-ctx.fill();
-
-ctx.beginPath();
-ctx.fillStyle = "rgba(30, 144, 255, 0.5)";
-ctx.arc(150, 180, 30, 0, 2 * Math.PI, true);
-ctx.fill();
-
-ctx.beginPath();
-ctx.fillStyle = "rgba(30, 144, 255, 0.75)";
-ctx.arc(250, 180, 30, 0, 2 * Math.PI, true);
-ctx.fill();
-
-// Draw opaque blue circle
-ctx.beginPath();
-ctx.fillStyle = "#3399cc";
-ctx.arc(350, 180, 10, 0, 2 * Math.PI, true);
-ctx.fill();
-ctx.beginPath();
-ctx.strokeStyle = "#fff";
-ctx.arc(350, 180, 10, 0, 2 * Math.PI, true);
-ctx.stroke();
-ctx.beginPath();
-ctx.fillStyle = "white";
-ctx.font = "bold 14px sans-serif";
-ctx.textAlign = "center";
-ctx.fillText("12", 350, 185);
-ctx.textBaseline = "middle";
-*/
