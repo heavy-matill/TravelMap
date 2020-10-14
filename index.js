@@ -32,26 +32,6 @@ Orte: https://www.latlong.net/place/cologne-germany-14658.html
 
 */
 
-/* Testdatavar lin = [[50.935173, 6.953101], [-20.244959, 57.561768], [0, 0],[50.935173, 6.953101]]
-var b_air = [true, false, false, true] */
-
-/* 2019 China */
-var lin = [[52.375893, 9.732010], [31.230391, 121.473701], [31.302420, 120.618070], [31.230391, 121.473701], [43.817070, 125.323547],
-[22.5431, 114.0579], [31.230391, 121.473701,], [29.8683, 121.5440,], [29.0792, 119.6474,], [39.9042, 116.4074,],
-[39.3434, 117.3616,], [43.817070, 125.323547,], [52.375893, 9.732010],]
-var loc = ['Hannover', 'Shanghai', 'Shuzhou', 'Shanghai', 'Changchun',
-    'Shenzhen', 'Shanghai', 'Ningbo', 'Jinhua', 'Beijing',
-    'Tianjin', 'Changchun', 'München']
-var b_air = [true, false, false, true, true,
-    true, true, false, false, true,
-    true, true, true]
-var b_draw = [false, true, true, false, true, true, false]
-/* 2020 Atlantik Campen 
-var lin = [[50.935173, 6.953101], [49.303449, 1.158169], [43.951503, -1.363952], [46.434123, 1.611364], [50.935173, 6.953101]]
-var loc = ['Köln', 'Pont de l\'Arche', 'Saint-Girons Plage', 'Éguzon-Chantôme', 'Köln']
-var b_air = lin == 0
-var b_draw = !b_air*/
-
 var trip_name = "2019_china"
 var color = "#3399cc"
 var numArcPoints = 100
@@ -87,9 +67,9 @@ var styleLine = {
 var styleFunctionLine = function (feature) {
     return styleLine[feature.getGeometry().getType()];
 };
-
+var radiusIcon = 10;
 var circleStyle = new CircleStyle({
-    radius: 10,
+    radius: radiusIcon,
     snapToPixel: false,
     stroke: new Stroke({
         color: '#fff',
@@ -103,246 +83,272 @@ var iSkipped = 0
 
 var vectorLayersGPX = []
 
-// Canvas setup
-var { createCanvas, loadImage } = require('canvas');
-var dist = 25
-var max_width = 100
-var canvas = createCanvas(300, (lin.length - 1) * dist);
-var ctx = canvas.getContext('2d');
+window.onload = function () {
 
-// iteration
-for (var i = 0; i < trip.length; i++) {
-    // draw icon if not skipped
-    if (trip[i].skip) {
-        iSkipped++
-    } else {
-        // draw icon in legend
-        ctx.beginPath();
-        ctx.fillStyle = color;
-        ctx.arc(dist * 0.75, (i - iSkipped + 0.75) * dist, 10, 0, 2 * Math.PI, true);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.strokeStyle = "#fff";
-        ctx.arc(dist * 0.75, (i - iSkipped + 0.75) * dist, 10, 0, 2 * Math.PI, true);
-        ctx.stroke();
 
-        ctx.beginPath();
-        ctx.fillStyle = "white";
-        ctx.font = "bold 14px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText((i - iSkipped + 1).toString(), dist * 0.75, (i - iSkipped + 0.75) * dist + 5);
-        //ctx.textBaseline = "middle";
 
-        ctx.beginPath();
-        ctx.fillStyle = "black";
-        ctx.font = "bold 14px sans-serif";
-        ctx.textAlign = "left";
-        ctx.fillText(trip[i].name, dist * 1.25, (i - iSkipped + 0.75) * dist + 5);
-        max_width = Math.max(ctx.measureText(trip[i].name).width, max_width)
-        console.log(max_width)
 
-        // draw icon on map
-        if (!drawnIcons.includes(trip[i].name)) {
-            // only if it has not been drawn with previous number
-            var iconNumberFeature = new Feature({
-                geometry: new Point([loc[trip[i].name][1], loc[trip[i].name][0]]).transform('EPSG:4326', 'EPSG:3857'),
-                type: 'icon',
-            });
-            var iconNumberStyle = new Style({
-                image: circleStyle,
-                text: new Text({
-                    text: i.toString(),
-                    fill: new Fill({
-                        color: '#fff',
-                    }),
-                    font: 'bold 14px sans-serif'
-                }),
-            });
-            iconNumberFeature.setStyle(iconNumberStyle)
-            vectorSourceIcon.addFeature(iconNumberFeature)
-            drawnIcons.push(trip[i].name)
-        }
+
+    // draw box
+    // Draw opaque blue circle
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        this.beginPath();
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        this.closePath();
+        return this;
     }
-    // draw line for all but last
-    if (i != trip.length - 1) {
-        if (trip[i].route && trip[i].route != "flight") {
-            // trip data available
 
-            vectorLayersGPX.push(new VectorLayer({
-                source: new VectorSource({
-                    url: 'data/trips/2020_atlantik/' + trip[i].route + '.gpx',
-                    format: new GPX(),
-                }),
-                style: styleFunctionLine
-            }))
+    // Canvas setup
+    var { createCanvas, loadImage } = require('canvas');
+    var dist = 25
+    var max_width = 100
+
+    var canvas_legend = document.getElementById("canvas-legend")
+    canvas_legend.width = 300
+    canvas_legend.height = (trip.length + 1) * dist
+    var ctx_legend = canvas_legend.getContext('2d');
+
+    var canvas_icon = document.getElementById("canvas-icon")
+    canvas_icon.width = radiusIcon * 2 + 2
+    canvas_icon.height = canvas_icon.width
+    var ctx_icon = canvas_icon.getContext('2d');
+
+
+    // iteration
+    for (var i = 0; i < trip.length; i++) {
+        // draw icon if not skipped
+        if (trip[i].skip) {
+            iSkipped++
         } else {
-            // trip data not available
-            // convert line to arc
-            var arcGenerator = new arc.GreatCircle(
-                { x: loc[trip[i].name][1], y: loc[trip[i].name][0] },
-                { x: loc[trip[i + 1].name][1], y: loc[trip[i + 1].name][0] }
-            );
-            var arcLine = arcGenerator.Arc(numArcPoints, { offset: 10 });
-            var line = new LineString(arcLine.geometries[0].coords);
-            line.transform('EPSG:4326', 'EPSG:3857');
-            if (trip[i].route == "flight") {
-                // trip is flight
-                vectorSourceLineShadows.addFeature(new Feature({
-                    geometry: line,
-                    finished: false
-                }))
+            // draw icon in legend
+            ctx_legend.beginPath();
+            ctx_legend.fillStyle = color;
+            ctx_legend.arc(dist * 0.75, (i - iSkipped + 0.75) * dist, radiusIcon, 0, 2.0 * Math.PI);
+            ctx_legend.fill();
+            ctx_legend.beginPath();
+            ctx_legend.strokeStyle = "#fff";
+            ctx_legend.arc(dist * 0.75, (i - iSkipped + 0.75) * dist, radiusIcon, 0, 2.0 * Math.PI);
+            ctx_legend.stroke();
 
-                var lineAir = new LineString(arcLine.geometries[0].coords);
-                lineAir.transform('EPSG:4326', 'EPSG:3857');
-                lineAir.flatCoordinates = shiftLine(lineAir.flatCoordinates, 5e5)
+            ctx_legend.beginPath();
+            ctx_legend.fillStyle = "white";
+            ctx_legend.font = "bold 14px sans-serif";
+            ctx_legend.textAlign = "center";
+            ctx_legend.fillText((i - iSkipped + 1).toString(), dist * 0.75, (i - iSkipped + 0.75) * dist + 5);
+            //ctx.textBaseline = "middle";
 
-                vectorSourceLines.addFeature(new Feature({
-                    geometry: lineAir,
-                    finished: false,
-                    style: lineStyle
+            ctx_legend.beginPath();
+            ctx_legend.fillStyle = "black";
+            ctx_legend.font = "bold 14px sans-serif";
+            ctx_legend.textAlign = "left";
+            ctx_legend.fillText(trip[i].name, dist * 1.25, (i - iSkipped + 0.75) * dist + 5);
+            max_width = Math.max(ctx_legend.measureText(trip[i].name).width, max_width)
+
+            // draw icon on map
+            if (!drawnIcons.includes(trip[i].name)) {
+                // only if it has not been drawn with previous number
+
+                // generate image
+                ctx_icon.beginPath();
+                ctx_icon.fillStyle = color;
+                ctx_icon.arc(canvas_icon.width / 2, canvas_icon.width / 2, radiusIcon, 0, 2.0 * Math.PI);
+                ctx_icon.fill();
+                ctx_icon.beginPath();
+                ctx_icon.strokeStyle = "#fff";
+                ctx_icon.arc(canvas_icon.width / 2, canvas_icon.width / 2, radiusIcon, 0, 2.0 * Math.PI);
+                ctx_icon.stroke();
+
+                ctx_icon.beginPath();
+                ctx_icon.fillStyle = "white";
+                ctx_icon.font = "bold 14px sans-serif";
+                ctx_icon.textAlign = "center";
+                ctx_icon.fillText((i - iSkipped + 1).toString(), canvas_icon.width / 2, canvas_icon.width / 2 + 5);
+
+                //draw on map
+                var iconNumberFeature = new Feature({
+                    geometry: new Point([loc[trip[i].name][1], loc[trip[i].name][0]]).transform('EPSG:4326', 'EPSG:3857'),
+                    type: 'icon',
+                });
+
+                var iconNumberStyle = new Style({
+                    image: new Icon({
+                        anchor: [0.5, 1],
+                        anchorXUnits: 'fraction',
+                        anchorYUnits: 'fraction',
+                        src: canvas_icon.toDataURL('image/png'),//'data/icon.png',
+                    }),/*circleStyle,
+                    text: new Text({
+                        text: i.toString(),
+                        fill: new Fill({
+                            color: '#fff',
+                        }),
+                        font: 'bold 14px sans-serif'
+                    }),*/
+                });
+                iconNumberFeature.setStyle(iconNumberStyle)
+                vectorSourceIcon.addFeature(iconNumberFeature)
+                drawnIcons.push(trip[i].name)
+            }
+        }
+        // draw line for all but last
+        if (i != trip.length - 1) {
+            if (trip[i].route && trip[i].route != "flight") {
+                // trip data available
+
+                vectorLayersGPX.push(new VectorLayer({
+                    source: new VectorSource({
+                        url: 'data/trips/2020_atlantik/' + trip[i].route + '.gpx',
+                        format: new GPX(),
+                    }),
+                    style: styleFunctionLine
                 }))
             } else {
-                // trip is not flight
-                vectorSourceLines.addFeature(new Feature({
-                    geometry: line,
-                    finished: false,
-                    style: lineStyle
-                }))
+                // trip data not available
+                // convert line to arc
+                var arcGenerator = new arc.GreatCircle(
+                    { x: loc[trip[i].name][1], y: loc[trip[i].name][0] },
+                    { x: loc[trip[i + 1].name][1], y: loc[trip[i + 1].name][0] }
+                );
+                var arcLine = arcGenerator.Arc(numArcPoints, { offset: 10 });
+                var line = new LineString(arcLine.geometries[0].coords);
+                line.transform('EPSG:4326', 'EPSG:3857');
+                if (trip[i].route == "flight") {
+                    // trip is flight
+                    vectorSourceLineShadows.addFeature(new Feature({
+                        geometry: line,
+                        finished: false
+                    }))
+
+                    var lineAir = new LineString(arcLine.geometries[0].coords);
+                    lineAir.transform('EPSG:4326', 'EPSG:3857');
+                    lineAir.flatCoordinates = shiftLine(lineAir.flatCoordinates, 5e5)
+
+                    vectorSourceLines.addFeature(new Feature({
+                        geometry: lineAir,
+                        finished: false,
+                        style: lineStyle
+                    }))
+                } else {
+                    // trip is not flight
+                    vectorSourceLines.addFeature(new Feature({
+                        geometry: line,
+                        finished: false,
+                        style: lineStyle
+                    }))
+                }
             }
         }
     }
-}
-// assign vectors to layers
-var vectorLayerIcon = new VectorLayer({
-    source: vectorSourceIcon,
-});
+    // assign vectors to layers
+    var vectorLayerIcon = new VectorLayer({
+        source: vectorSourceIcon,
+    });
 
-var vectorLayerLineShadows = new VectorLayer({
-    source: vectorSourceLineShadows,
-    style: styleFunctionShadow
-});
+    var vectorLayerLineShadows = new VectorLayer({
+        source: vectorSourceLineShadows,
+        style: styleFunctionShadow
+    });
 
-var vectorLayerLines = new VectorLayer({
-    source: vectorSourceLines,
-    style: styleFunctionLine
-});
+    var vectorLayerLines = new VectorLayer({
+        source: vectorSourceLines,
+        style: styleFunctionLine
+    });
 
-// Flight path Layer
-
-var view = new View({
-    center: [0, 0],
-    zoom: 1,
-  });
-const map = new Map({
-    target: 'map',
-    layers: [
-        /*new TileLayer({
-            source: new OSM()
-        }),*/
-        /*new TileLayer({
-            source: new XYZ({
-                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                maxZoom: 19
-            })
-        }),
-        vectorLayerLineShadows,
-        vectorLayerLines,
-        new TileLayer({
-            source: new XYZ({
-                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-                maxZoom: 19
-            })
-        }),*/
-        new TileLayer({
-            source: new XYZ({
-                url: 'https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=' + maptiler_key,
-                maxZoom: 23,
-            })
-        }),
-        /*new TileLayer({
-            source: new XYZ({
-                url: 'https://api.maptiler.com/tiles/hillshades/{z}/{x}/{y}.png?key=' + maptiler_key,
-                maxZoom: 23,
-            })
-        }),*/
-        vectorLayerLineShadows,
-        vectorLayerLines,
-        ...vectorLayersGPX,
-        vectorLayerIcon,
-    ],
-    view: view
-});
+    // create map based on layers
+    const map = new Map({
+        target: 'map',
+        layers: [
+            /*new TileLayer({
+                source: new OSM()
+            }),*/
+            /*new TileLayer({
+                source: new XYZ({
+                    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                    maxZoom: 19
+                })
+            }),
+            vectorLayerLineShadows,
+            vectorLayerLines,
+            new TileLayer({
+                source: new XYZ({
+                    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+                    maxZoom: 19
+                })
+            }),*/
+            new TileLayer({
+                source: new XYZ({
+                    url: 'https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=' + maptiler_key,
+                    maxZoom: 23,
+                })
+            }),
+            /*new TileLayer({
+                source: new XYZ({
+                    url: 'https://api.maptiler.com/tiles/hillshades/{z}/{x}/{y}.png?key=' + maptiler_key,
+                    maxZoom: 23,
+                })
+            }),*/
+            vectorLayerLineShadows,
+            vectorLayerLines,
+            ...vectorLayersGPX,
+            vectorLayerIcon,
+        ],
+        view: new View({
+            center: [0, 0],
+            zoom: 1,
+        })
+    });
 
 
-//map.getView().fit(vectorSourceLines.getExtent(), {padding: [100, 100, 100, 100]});
-map.getView().fit(vectorSourceIcon.getExtent(), {padding: [100, 100, 100, 100]});
+    //map.getView().fit(vectorSourceLines.getExtent(), {padding: [100, 100, 100, 100]});
+    map.getView().fit(vectorSourceIcon.getExtent(), { padding: [100, 100, 100, 100] });
 
-function shiftPoint(p_x, p_y, distance, b_x, b_y) {
-    var x = p_x - b_x
-    var y = p_y - b_y
-    var alpha = Math.atan(y / x)
-    p_x -= Math.sin(alpha) * distance
-    p_y += Math.abs(Math.cos(alpha)) * distance
-    return [p_x, p_y]
-}
 
-function shiftLine(li, distance) {
-    var rotli = [li[0], li[1]]
-    var rotpoint = []
-    var len = li.length / 2
-    distance = distance / 1e7 * Math.sqrt(Math.pow(li[0] - li[len * 2 - 2], 2) + Math.pow(li[1] - li[len * 2 - 1], 2))
-    for (var i = 1; i < len; i++) {
-        var fac = 1 - Math.pow((i * 2 / (len - 1) - 1), 8)
-        var distance_bowed = distance * fac
-        rotpoint = shiftPoint(li[i * 2], li[i * 2 + 1], distance_bowed, li[0], li[1])
-        rotli.push(rotpoint[0])
-        rotli.push(rotpoint[1])
+    ctx_legend.fillStyle = "rgba(255,255,255,0.5)";
+    ctx_legend.globalCompositeOperation = 'destination-over';
+    ctx_legend.roundRect(dist * 0.2, dist * 0.2, max_width + dist * 1.2, (trip.length - iSkipped) * dist + 0.1 * dist, 10).fill(); //or .fill() for a filled rect
+    //loadImage('data/icon.png').then((image) => {
+    //   ctx.drawImage(image, 50, 0, 70, 70)
+
+    var image = canvas_legend.toDataURL().replace("image/png", "image/octet-stream");
+    download.setAttribute("href", image);
+    window.open(canvas_legend.toDataURL('image/png'));
+
+    /*
+    Download not possible for canvas with external sources
+    var mapCanvas = document.getElementsByTagName('canvas')[0]
+    var image = mapCanvas.toDataURL().replace("image/png", "image/octet-stream");
+    window.open(mapCanvas.toDataURL('image/png'));
+    mapCanvas.toBlob(function (blob) {
+        saveAs(blob, 'map.png');
+    });*/
+
+    function shiftPoint(p_x, p_y, distance, b_x, b_y) {
+        var x = p_x - b_x
+        var y = p_y - b_y
+        var alpha = Math.atan(y / x)
+        p_x -= Math.sin(alpha) * distance
+        p_y += Math.abs(Math.cos(alpha)) * distance
+        return [p_x, p_y]
     }
-    return rotli
+
+    function shiftLine(li, distance) {
+        var rotli = [li[0], li[1]]
+        var rotpoint = []
+        var len = li.length / 2
+        distance = distance / 1e7 * Math.sqrt(Math.pow(li[0] - li[len * 2 - 2], 2) + Math.pow(li[1] - li[len * 2 - 1], 2))
+        for (var i = 1; i < len; i++) {
+            var fac = 1 - Math.pow((i * 2 / (len - 1) - 1), 8)
+            var distance_bowed = distance * fac
+            rotpoint = shiftPoint(li[i * 2], li[i * 2 + 1], distance_bowed, li[0], li[1])
+            rotli.push(rotpoint[0])
+            rotli.push(rotpoint[1])
+        }
+        return rotli
+    }
 }
-
-
-
-
-// draw box
-// Draw opaque blue circle
-CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
-    if (w < 2 * r) r = w / 2;
-    if (h < 2 * r) r = h / 2;
-    this.beginPath();
-    this.moveTo(x + r, y);
-    this.arcTo(x + w, y, x + w, y + h, r);
-    this.arcTo(x + w, y + h, x, y + h, r);
-    this.arcTo(x, y + h, x, y, r);
-    this.arcTo(x, y, x + w, y, r);
-    this.closePath();
-    return this;
-}
-ctx.fillStyle = "rgba(255,255,255,0.5)";
-ctx.globalCompositeOperation = 'destination-over';
-ctx.roundRect(dist * 0.2, dist * 0.2, max_width + dist * 1.2, (trip.length - iSkipped) * dist + 0.1 * dist, 10).fill(); //or .fill() for a filled rect
-//loadImage('data/icon.png').then((image) => {
-//   ctx.drawImage(image, 50, 0, 70, 70)
-
-//Create the element using the createElement method.
-var myDiv = document.createElement("div");
-
-//Set its unique ID.
-myDiv.id = 'div_canvas';
-
-//Add your content to the DIV
-myDiv.innerHTML = '<img src="' + canvas.toDataURL() + '" />';
-
-//Finally, append the element to the HTML body
-document.body.appendChild(myDiv);
-var download = document.getElementById("download");
-var image = canvas.toDataURL().replace("image/png", "image/octet-stream");
-download.setAttribute("href", image);
-window.open(canvas.toDataURL('image/png'));
-
-var mapCanvas = document.getElementsByTagName('canvas')[0]
-var image = mapCanvas.toDataURL().replace("image/png", "image/octet-stream");
-window.open(mapCanvas.toDataURL('image/png'));
-mapCanvas.toBlob(function(blob) {
-    saveAs(blob, 'map.png');
-  });
