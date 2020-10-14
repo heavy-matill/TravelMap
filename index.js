@@ -14,11 +14,10 @@ import LineString from 'ol/geom/LineString';
 import Overlay from 'ol/Overlay';
 import Icon from 'ol/style/Icon';
 import { makeRegular } from 'ol/geom/Polygon';
+import GPX from 'ol/format/GPX';
 var arc = require('arc');
 var fs = require('fs');
 
-var trip = JSON.parse(fs.readFileSync('2019_china.json'))
-var locations = JSON.parse(fs.readFileSync('locations.json'))
 
 require('dotenv').config();
 var maptiler_key = process.env.MAPTILER_KEY
@@ -29,18 +28,21 @@ Orte: https://www.latlong.net/place/cologne-germany-14658.html
     Mauritius: [-20.244959, 57.561768]
     Po
 */
+/* get gpx from
+
+*/
 
 /* Testdatavar lin = [[50.935173, 6.953101], [-20.244959, 57.561768], [0, 0],[50.935173, 6.953101]]
 var b_air = [true, false, false, true] */
 
 /* 2019 China */
-var lin = [[52.375893,9.732010],[31.230391, 121.473701],[31.302420, 120.618070],[31.230391, 121.473701],[43.817070, 125.323547],
-[ 22.5431, 114.0579],[31.230391, 121.473701,],[29.8683, 121.5440, ],[29.0792, 119.6474, ],[39.9042, 116.4074, ],
-[39.3434, 117.3616, ],[43.817070, 125.323547, ],[52.375893,9.732010],]
-var loc = ['Hannover', 'Shanghai', 'Shuzhou', 'Shanghai', 'Changchun', 
-'Shenzhen', 'Shanghai', 'Ningbo', 'Jinhua', 'Beijing', 
-'Tianjin', 'Changchun', 'München']
-var b_air = [true, false, false, true, true, 
+var lin = [[52.375893, 9.732010], [31.230391, 121.473701], [31.302420, 120.618070], [31.230391, 121.473701], [43.817070, 125.323547],
+[22.5431, 114.0579], [31.230391, 121.473701,], [29.8683, 121.5440,], [29.0792, 119.6474,], [39.9042, 116.4074,],
+[39.3434, 117.3616,], [43.817070, 125.323547,], [52.375893, 9.732010],]
+var loc = ['Hannover', 'Shanghai', 'Shuzhou', 'Shanghai', 'Changchun',
+    'Shenzhen', 'Shanghai', 'Ningbo', 'Jinhua', 'Beijing',
+    'Tianjin', 'Changchun', 'München']
+var b_air = [true, false, false, true, true,
     true, true, false, false, true,
     true, true, true]
 var b_draw = [false, true, true, false, true, true, false]
@@ -49,42 +51,15 @@ var lin = [[50.935173, 6.953101], [49.303449, 1.158169], [43.951503, -1.363952],
 var loc = ['Köln', 'Pont de l\'Arche', 'Saint-Girons Plage', 'Éguzon-Chantôme', 'Köln']
 var b_air = lin == 0
 var b_draw = !b_air*/
+
+var trip_name = "2019_china"
 var color = "#3399cc"
+var numArcPoints = 100
+var trip = JSON.parse(fs.readFileSync('static/data/trips/' + trip_name + '/trip.json'))
+var loc = JSON.parse(fs.readFileSync('static/data/trips/' + trip_name + '/locations.json'))
 
 // Marker with number
 var vectorSourceIcon = new VectorSource();
-for (var i = 1; i < lin.length - 1; i++) {
-    var iconNumberFeature = new Feature({
-        geometry: new Point([lin[i][1], lin[i][0]]).transform('EPSG:4326', 'EPSG:3857'),
-        type: 'icon',
-    });
-    var iconNumberStyle = new Style({
-        image: new CircleStyle({
-            radius: 10,
-            snapToPixel: false,
-            stroke: new Stroke({
-                color: '#fff',
-            }),
-            fill: new Fill({
-                color: color,
-            }),
-        }),
-        text: new Text({
-            text: i.toString(),
-            fill: new Fill({
-                color: '#fff',
-            }),
-            font: 'bold 14px sans-serif'
-        }),
-    });
-    iconNumberFeature.setStyle(iconNumberStyle)
-    vectorSourceIcon.addFeature(iconNumberFeature)
-}
-var vectorLayerIcon = new VectorLayer({
-    source: vectorSourceIcon,
-});
-
-// Lines
 var vectorSourceLines = new VectorSource();
 var vectorSourceLineShadows = new VectorSource();
 var lineStyle = new Style({
@@ -106,47 +81,142 @@ var styleFunctionShadow = function (feature) {
     return styleShadow[feature.getGeometry().getType()];
 };
 var styleLine = {
-    'LineString': lineStyle
+    'LineString': lineStyle,
+    'MultiLineString': lineStyle
 };
 var styleFunctionLine = function (feature) {
     return styleLine[feature.getGeometry().getType()];
 };
 
-var numPoints = 100
-for (var i = 0; i < lin.length - 1; i++) {
-    var arcGenerator = new arc.GreatCircle(
-        { x: lin[i][1], y: lin[i][0] },
-        { x: lin[i + 1][1], y: lin[i + 1][0] }
-    );
-    var arcLine = arcGenerator.Arc(numPoints, { offset: 10 });
-    var line = new LineString(arcLine.geometries[0].coords);
-    line.transform('EPSG:4326', 'EPSG:3857');
-    if (b_air[i]) {
-        var lineShadowFeature = new Feature({
-            geometry: line,
-            finished: false
-        })
-        vectorSourceLineShadows.addFeature(lineShadowFeature)
+var circleStyle = new CircleStyle({
+    radius: 10,
+    snapToPixel: false,
+    stroke: new Stroke({
+        color: '#fff',
+    }),
+    fill: new Fill({
+        color: color,
+    }),
+})
+var drawnIcons = []
+var iSkipped = 0
 
-        var lineAir = new LineString(arcLine.geometries[0].coords);
-        lineAir.transform('EPSG:4326', 'EPSG:3857');
-        lineAir.flatCoordinates = shiftLine(lineAir.flatCoordinates, 5e5)
+var vectorLayersGPX = []
 
-        var lineFeature = new Feature({
-            geometry: lineAir,
-            finished: false,
-            style: lineStyle
-        })
-        vectorSourceLines.addFeature(lineFeature)
+// Canvas setup
+var { createCanvas, loadImage } = require('canvas');
+var dist = 25
+var max_width = 100
+var canvas = createCanvas(300, (lin.length - 1) * dist);
+var ctx = canvas.getContext('2d');
+
+// iteration
+for (var i = 0; i < trip.length; i++) {
+    // draw icon if not skipped
+    if (trip[i].skip) {
+        iSkipped++
     } else {
-        var lineFeature = new Feature({
-            geometry: line,
-            finished: false,
-            style: lineStyle
-        })
-        vectorSourceLines.addFeature(lineFeature)
+        // draw icon in legend
+        ctx.beginPath();
+        ctx.fillStyle = color;
+        ctx.arc(dist * 0.75, (i - iSkipped + 0.75) * dist, 10, 0, 2 * Math.PI, true);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.strokeStyle = "#fff";
+        ctx.arc(dist * 0.75, (i - iSkipped + 0.75) * dist, 10, 0, 2 * Math.PI, true);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.fillStyle = "white";
+        ctx.font = "bold 14px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText((i - iSkipped + 1).toString(), dist * 0.75, (i - iSkipped + 0.75) * dist + 5);
+        //ctx.textBaseline = "middle";
+
+        ctx.beginPath();
+        ctx.fillStyle = "black";
+        ctx.font = "bold 14px sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(trip[i].name, dist * 1.25, (i - iSkipped + 0.75) * dist + 5);
+        max_width = Math.max(ctx.measureText(trip[i].name).width, max_width)
+        console.log(max_width)
+
+        // draw icon on map
+        if (!drawnIcons.includes(trip[i].name)) {
+            // only if it has not been drawn with previous number
+            var iconNumberFeature = new Feature({
+                geometry: new Point([loc[trip[i].name][1], loc[trip[i].name][0]]).transform('EPSG:4326', 'EPSG:3857'),
+                type: 'icon',
+            });
+            var iconNumberStyle = new Style({
+                image: circleStyle,
+                text: new Text({
+                    text: i.toString(),
+                    fill: new Fill({
+                        color: '#fff',
+                    }),
+                    font: 'bold 14px sans-serif'
+                }),
+            });
+            iconNumberFeature.setStyle(iconNumberStyle)
+            vectorSourceIcon.addFeature(iconNumberFeature)
+            drawnIcons.push(trip[i].name)
+        }
+    }
+    // draw line for all but last
+    if (i != trip.length - 1) {
+        if (trip[i].route && trip[i].route != "flight") {
+            // trip data available
+
+            vectorLayersGPX.push(new VectorLayer({
+                source: new VectorSource({
+                    url: 'data/trips/2020_atlantik/' + trip[i].route + '.gpx',
+                    format: new GPX(),
+                }),
+                style: styleFunctionLine
+            }))
+        } else {
+            // trip data not available
+            // convert line to arc
+            var arcGenerator = new arc.GreatCircle(
+                { x: loc[trip[i].name][1], y: loc[trip[i].name][0] },
+                { x: loc[trip[i + 1].name][1], y: loc[trip[i + 1].name][0] }
+            );
+            var arcLine = arcGenerator.Arc(numArcPoints, { offset: 10 });
+            var line = new LineString(arcLine.geometries[0].coords);
+            line.transform('EPSG:4326', 'EPSG:3857');
+            if (trip[i].route == "flight") {
+                // trip is flight
+                vectorSourceLineShadows.addFeature(new Feature({
+                    geometry: line,
+                    finished: false
+                }))
+
+                var lineAir = new LineString(arcLine.geometries[0].coords);
+                lineAir.transform('EPSG:4326', 'EPSG:3857');
+                lineAir.flatCoordinates = shiftLine(lineAir.flatCoordinates, 5e5)
+
+                vectorSourceLines.addFeature(new Feature({
+                    geometry: lineAir,
+                    finished: false,
+                    style: lineStyle
+                }))
+            } else {
+                // trip is not flight
+                vectorSourceLines.addFeature(new Feature({
+                    geometry: line,
+                    finished: false,
+                    style: lineStyle
+                }))
+            }
+        }
     }
 }
+// assign vectors to layers
+var vectorLayerIcon = new VectorLayer({
+    source: vectorSourceIcon,
+});
+
 var vectorLayerLineShadows = new VectorLayer({
     source: vectorSourceLineShadows,
     style: styleFunctionShadow
@@ -157,9 +227,12 @@ var vectorLayerLines = new VectorLayer({
     style: styleFunctionLine
 });
 
-
 // Flight path Layer
 
+var view = new View({
+    center: [0, 0],
+    zoom: 1,
+  });
 const map = new Map({
     target: 'map',
     layers: [
@@ -182,19 +255,27 @@ const map = new Map({
         }),*/
         new TileLayer({
             source: new XYZ({
-              url: 'https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=' + maptiler_key,
-              maxZoom: 20,
+                url: 'https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=' + maptiler_key,
+                maxZoom: 23,
             })
         }),
-        vectorLayerShadows,
-        vectorLayer,
+        /*new TileLayer({
+            source: new XYZ({
+                url: 'https://api.maptiler.com/tiles/hillshades/{z}/{x}/{y}.png?key=' + maptiler_key,
+                maxZoom: 23,
+            })
+        }),*/
+        vectorLayerLineShadows,
+        vectorLayerLines,
+        ...vectorLayersGPX,
         vectorLayerIcon,
     ],
-    view: new View({
-        center: [0, 0],
-        zoom: 0
-    })
+    view: view
 });
+
+
+//map.getView().fit(vectorSourceLines.getExtent(), {padding: [100, 100, 100, 100]});
+map.getView().fit(vectorSourceIcon.getExtent(), {padding: [100, 100, 100, 100]});
 
 function shiftPoint(p_x, p_y, distance, b_x, b_y) {
     var x = p_x - b_x
@@ -209,7 +290,7 @@ function shiftLine(li, distance) {
     var rotli = [li[0], li[1]]
     var rotpoint = []
     var len = li.length / 2
-    distance = distance / 1e7 * Math.sqrt(Math.pow(li[0] - li[len*2-2],2)+Math.pow(li[1] - li[len*2-1],2))
+    distance = distance / 1e7 * Math.sqrt(Math.pow(li[0] - li[len * 2 - 2], 2) + Math.pow(li[1] - li[len * 2 - 1], 2))
     for (var i = 1; i < len; i++) {
         var fac = 1 - Math.pow((i * 2 / (len - 1) - 1), 8)
         var distance_bowed = distance * fac
@@ -220,56 +301,26 @@ function shiftLine(li, distance) {
     return rotli
 }
 
-var { createCanvas, loadImage } = require('canvas');
-var dist = 25
-var max_width = 100
-var canvas = createCanvas(300, (lin.length-1) * dist);
-var ctx = canvas.getContext('2d');
+
 
 
 // draw box
 // Draw opaque blue circle
-for (var i = 1; i < lin.length - 1; i++) {
-    ctx.beginPath();
-    ctx.fillStyle = color;
-    ctx.arc(dist*0.75, (i-0.25) * dist, 10, 0, 2 * Math.PI, true);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.strokeStyle = "#fff";
-    ctx.arc(dist*0.75, (i-0.25) * dist, 10, 0, 2 * Math.PI, true);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.fillStyle = "white";
-    ctx.font = "bold 14px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(i.toString(), dist*0.75, (i-0.25) * dist + 5);
-    //ctx.textBaseline = "middle";
-
-    ctx.beginPath();
-    ctx.fillStyle = "black";
-    ctx.font = "bold 14px sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText(loc[i], dist*1.25, (i-0.25) * dist + 5);
-    max_width = Math.max(ctx.measureText(loc[i]).width, max_width)
-    console.log(max_width)
-
-}
 CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
     if (w < 2 * r) r = w / 2;
     if (h < 2 * r) r = h / 2;
     this.beginPath();
-    this.moveTo(x+r, y);
-    this.arcTo(x+w, y,   x+w, y+h, r);
-    this.arcTo(x+w, y+h, x,   y+h, r);
-    this.arcTo(x,   y+h, x,   y,   r);
-    this.arcTo(x,   y,   x+w, y,   r);
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
     this.closePath();
     return this;
-  }
-  ctx.fillStyle = "rgba(255,255,255,0.5)";
-  ctx.globalCompositeOperation='destination-over';
-  ctx.roundRect(dist*0.2, dist*0.2, max_width+ dist*1.2, (lin.length-2) * dist + 0.1*dist, 10).fill(); //or .fill() for a filled rect
+}
+ctx.fillStyle = "rgba(255,255,255,0.5)";
+ctx.globalCompositeOperation = 'destination-over';
+ctx.roundRect(dist * 0.2, dist * 0.2, max_width + dist * 1.2, (trip.length - iSkipped) * dist + 0.1 * dist, 10).fill(); //or .fill() for a filled rect
 //loadImage('data/icon.png').then((image) => {
 //   ctx.drawImage(image, 50, 0, 70, 70)
 
@@ -288,3 +339,10 @@ var download = document.getElementById("download");
 var image = canvas.toDataURL().replace("image/png", "image/octet-stream");
 download.setAttribute("href", image);
 window.open(canvas.toDataURL('image/png'));
+
+var mapCanvas = document.getElementsByTagName('canvas')[0]
+var image = mapCanvas.toDataURL().replace("image/png", "image/octet-stream");
+window.open(mapCanvas.toDataURL('image/png'));
+mapCanvas.toBlob(function(blob) {
+    saveAs(blob, 'map.png');
+  });

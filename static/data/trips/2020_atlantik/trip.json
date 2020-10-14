@@ -1,0 +1,23 @@
+[
+    {
+        "name": "Köln",
+        "skip": true,
+        "route": "01"
+    },
+    {
+        "name": "Pont-de-l'Arche",
+        "route": "02"
+    },
+    {
+        "name": "Saint-Girons Plage",
+        "route": "03"
+    },
+    {
+        "name": "Éguzon-Chantôme",
+        "route": "04"
+    },
+    {
+        "name": "Köln",
+        "skip": true
+    }
+]

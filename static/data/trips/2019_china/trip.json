@@ -1,8 +1,8 @@
 [
     {
         "name": "Hannover",
-        "b_air": true,
-        "b_draw": false
+        "skip": true,
+        "route": "flight"
     },
     {
         "name": "Shanghai"
@@ -12,40 +12,43 @@
     },
     {
         "name": "Shanghai",
-        "b_air": true
+        "route": "flight"
     },
     {
         "name": "Changchun",
-        "b_air": true
+        "route": "flight"
     },
     {
         "name": "Shenzhen",
-        "b_air": true
+        "route": "flight"
     },
     {
-        "name": "Shanghai",
-        "b_air": true
+        "name": "Shanghai"
     },
     {
         "name": "Ningbo"
     },
     {
-        "name": "Jinhua"
+        "name": "Jinhua",
+        "route": "flight"
+    },
+    {
+        "name": "Beijing"
+    },
+    {
+        "name": "Tianjin"
     },
     {
         "name": "Beijing",
-        "b_air": true
-    },
-    {
-        "name": "Tianjin",
-        "b_air": true
+        "route": "flight",
+        "skip": true
     },
     {
         "name": "Changchun",
-        "b_air": true
+        "route": "flight"
     },
     {
         "name": "München",
-        "b_draw": false
+        "skip": true
     }
 ]
