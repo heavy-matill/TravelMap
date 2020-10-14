@@ -68,16 +68,7 @@ var styleFunctionLine = function (feature) {
     return styleLine[feature.getGeometry().getType()];
 };
 var radiusIcon = 10;
-var circleStyle = new CircleStyle({
-    radius: radiusIcon,
-    snapToPixel: false,
-    stroke: new Stroke({
-        color: '#fff',
-    }),
-    fill: new Fill({
-        color: color,
-    }),
-})
+
 var drawnIcons = []
 var iSkipped = 0
 
