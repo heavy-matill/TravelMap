@@ -15,9 +15,12 @@ import Overlay from 'ol/Overlay';
 import Icon from 'ol/style/Icon';
 import { makeRegular } from 'ol/geom/Polygon';
 import GPX from 'ol/format/GPX';
+import {Control, defaults as defaultControls} from 'ol/control';
 var arc = require('arc');
 var fs = require('fs');
-
+var JSZip = require("jszip");
+var zip = new JSZip();
+import { saveAs } from 'file-saver';
 
 require('dotenv').config();
 var maptiler_key = process.env.MAPTILER_KEY
@@ -31,9 +34,25 @@ Orte: https://www.latlong.net/place/cologne-germany-14658.html
 /* get gpx from
 
 */
+/*
+var trip_name = "2020_atlantik"
+var color = "#3399cc"
+*/
 
 var trip_name = "2019_china"
-var color = "#3399cc"
+var color = "#CC334C"
+
+
+/* other colors https://www.htmlcsscolor.com/hex/3399CC#:~:text=HEX%20color%20%233399CC%2C%20Color%20name,%2D%20HTML%20CSS%20Color
+Triadic Colors
+ #CC3399 #99CC33
+Analogous Colors
+ #334CCC #33CCB2
+Split complements Colors
+ #CC334C #CCB233
+Complementary Color
+ #CC6633
+*/
 var numArcPoints = 100
 var trip = JSON.parse(fs.readFileSync('static/data/trips/' + trip_name + '/trip.json'))
 var loc = JSON.parse(fs.readFileSync('static/data/trips/' + trip_name + '/locations.json'))
@@ -75,13 +94,6 @@ var iSkipped = 0
 var vectorLayersGPX = []
 
 window.onload = function () {
-
-
-
-
-
-    // draw box
-    // Draw opaque blue circle
     CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
         if (w < 2 * r) r = w / 2;
         if (h < 2 * r) r = h / 2;
@@ -110,11 +122,52 @@ window.onload = function () {
     canvas_icon.height = canvas_icon.width
     var ctx_icon = canvas_icon.getContext('2d');
 
+    var canvas_icon_hd = document.getElementById("canvas-icon-hd")
+    canvas_icon_hd.width = radiusIcon * 8 + 16
+    canvas_icon_hd.height = canvas_icon_hd.width
+    var ctx_icon_hd = canvas_icon_hd.getContext('2d');
+
 
     // iteration
     for (var i = 0; i < trip.length; i++) {
-        // draw icon if not skipped
-        if (trip[i].skip) {
+        
+        // generate icon
+        ctx_icon.beginPath();
+        ctx_icon.fillStyle = color;
+        ctx_icon.arc(canvas_icon.width / 2, canvas_icon.width / 2, radiusIcon, 0, 2.0 * Math.PI);
+        ctx_icon.fill();
+        ctx_icon.beginPath();
+        ctx_icon.strokeStyle = "#fff";
+        ctx_icon.arc(canvas_icon.width / 2, canvas_icon.width / 2, radiusIcon, 0, 2.0 * Math.PI);
+        ctx_icon.stroke();
+
+        ctx_icon.beginPath();
+        ctx_icon.fillStyle = "white";
+        ctx_icon.font = "bold 14px sans-serif";
+        ctx_icon.textAlign = "center";
+        ctx_icon.fillText((i - iSkipped + 1).toString(), canvas_icon.width / 2, canvas_icon.width / 2 + 5);
+
+        
+        // generate icon_hd hd
+        ctx_icon_hd.beginPath();
+        ctx_icon_hd.fillStyle = color;
+        ctx_icon_hd.arc(canvas_icon_hd.width / 2, canvas_icon_hd.width / 2, radiusIcon*4, 0, 2.0 * Math.PI);
+        ctx_icon_hd.fill();
+        ctx_icon_hd.beginPath();
+        ctx_icon_hd.strokeStyle = "#fff";
+        ctx_icon_hd.lineWidth = 4;
+        ctx_icon_hd.arc(canvas_icon_hd.width / 2, canvas_icon_hd.width / 2, radiusIcon*4, 0, 2.0 * Math.PI);
+        ctx_icon_hd.stroke();
+
+        ctx_icon_hd.beginPath();
+        ctx_icon_hd.fillStyle = "white";
+        ctx_icon_hd.font = "bold 56px sans-serif";
+        ctx_icon_hd.textAlign = "center";
+        ctx_icon_hd.fillText((i - iSkipped + 1).toString(), canvas_icon_hd.width / 2, canvas_icon_hd.width / 2 + 20);
+
+        zip.file(i.toString()+"_"+trip[i].name+".png", canvas_icon_hd.toDataURL('image/png').split('base64,')[1], {base64: true})
+        // draw icon on map if not skipped
+        if (trip[i].skip) { 
             iSkipped++
         } else {
             // draw icon in legend
@@ -144,22 +197,6 @@ window.onload = function () {
             // draw icon on map
             if (!drawnIcons.includes(trip[i].name)) {
                 // only if it has not been drawn with previous number
-
-                // generate image
-                ctx_icon.beginPath();
-                ctx_icon.fillStyle = color;
-                ctx_icon.arc(canvas_icon.width / 2, canvas_icon.width / 2, radiusIcon, 0, 2.0 * Math.PI);
-                ctx_icon.fill();
-                ctx_icon.beginPath();
-                ctx_icon.strokeStyle = "#fff";
-                ctx_icon.arc(canvas_icon.width / 2, canvas_icon.width / 2, radiusIcon, 0, 2.0 * Math.PI);
-                ctx_icon.stroke();
-
-                ctx_icon.beginPath();
-                ctx_icon.fillStyle = "white";
-                ctx_icon.font = "bold 14px sans-serif";
-                ctx_icon.textAlign = "center";
-                ctx_icon.fillText((i - iSkipped + 1).toString(), canvas_icon.width / 2, canvas_icon.width / 2 + 5);
 
                 //draw on map
                 var iconNumberFeature = new Feature({
@@ -251,6 +288,11 @@ window.onload = function () {
         style: styleFunctionLine
     });
 
+    var view = new View({
+        center: [0, 0],
+        zoom: 0.5
+    })
+
     // create map based on layers
     const map = new Map({
         target: 'map',
@@ -275,9 +317,12 @@ window.onload = function () {
             new TileLayer({
                 source: new XYZ({
                     url: 'https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=' + maptiler_key,
-                    maxZoom: 23,
+                    //url: 'https://api.maptiler.com/maps/fd2908cc-7de9-44b0-a421-ac67b1026961/?key=' + maptiler_key + '#{z}/{x}/{y}',
+                    maxZoom: 7,
+                    crossOrigin: "anonymous"
                 })
             }),
+            //https://api.maptiler.com/maps/fd2908cc-7de9-44b0-a421-ac67b1026961/
             /*new TileLayer({
                 source: new XYZ({
                     url: 'https://api.maptiler.com/tiles/hillshades/{z}/{x}/{y}.png?key=' + maptiler_key,
@@ -289,15 +334,12 @@ window.onload = function () {
             ...vectorLayersGPX,
             vectorLayerIcon,
         ],
-        view: new View({
-            center: [0, 0],
-            zoom: 1,
-        })
+        view: view
     });
 
 
     //map.getView().fit(vectorSourceLines.getExtent(), {padding: [100, 100, 100, 100]});
-    map.getView().fit(vectorSourceIcon.getExtent(), { padding: [100, 100, 100, 100] });
+    map.getView().fit(vectorSourceIcon.getExtent(), { padding: [300, 300, 300, 300] });
 
 
     ctx_legend.fillStyle = "rgba(255,255,255,0.5)";
@@ -306,18 +348,28 @@ window.onload = function () {
     //loadImage('data/icon.png').then((image) => {
     //   ctx.drawImage(image, 50, 0, 70, 70)
 
-    var image = canvas_legend.toDataURL().replace("image/png", "image/octet-stream");
+    /*var image = canvas_legend.toDataURL().replace("image/png", "image/octet-stream");
     download.setAttribute("href", image);
-    window.open(canvas_legend.toDataURL('image/png'));
+    window.open(canvas_legend.toDataURL('image/png'));*/
 
-    /*
-    Download not possible for canvas with external sources
-    var mapCanvas = document.getElementsByTagName('canvas')[0]
-    var image = mapCanvas.toDataURL().replace("image/png", "image/octet-stream");
-    window.open(mapCanvas.toDataURL('image/png'));
-    mapCanvas.toBlob(function (blob) {
-        saveAs(blob, 'map.png');
-    });*/
+    
+    //Download not possible for canvas with external sources
+    //var image = mapCanvas.toDataURL().replace("image/png", "image/octet-stream");
+    //window.open(mapCanvas.toDataURL('image/png'));
+    //mapCanvas.toBlob(function (blob) {
+    //    saveAs(blob, 'map.png');
+    //})
+    
+    //Download not possible for canvas with external sources
+    //var mapCanvas = document.getElementsByTagName('canvas')[0]
+    //zip.file("_canvas_" + trip_name + ".png", mapCanvas.toDataURL('image/png').split('base64,')[1], {base64: true})
+    zip.file("_legend_" + trip_name + ".png", canvas_legend.toDataURL('image/png').split('base64,')[1], {base64: true})
+        // Generate the zip file asynchronously
+    zip.generateAsync({type:"blob"})
+    .then(function(content) {
+        // Force down of the Zip file
+        saveAs(content, trip_name + ".zip");
+    });
 
     function shiftPoint(p_x, p_y, distance, b_x, b_y) {
         var x = p_x - b_x
@@ -343,3 +395,20 @@ window.onload = function () {
         return rotli
     }
 }
+
+
+
+//https://openlayers.org/en/latest/examples/custom-controls.html
+var btnDownload = document.getElementById('download')
+
+
+btnDownload.addEventListener('click', () => {
+    console.log(map)
+    console.log(view)
+    view.fit(vectorSourceLines.getExtent(), { padding: [100, 100, 100, 100] });
+})
+document.getElementById('testButton').click(function(){
+    console.log(map)
+    console.log(view)
+    view.fit(vectorSourceLines.getExtent(), { padding: [100, 100, 100, 100] });
+});

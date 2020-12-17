@@ -13,6 +13,8 @@
   "dependencies": {
     "arc": "^0.1.1",
     "canvas": "^2.6.1",
+    "file-saver": "^2.0.5",
+    "jszip": "^3.5.0",
     "ol": "^6.4.3",
     "parcel": "^1.12.4"
   },
