@@ -1,26 +1,46 @@
 import 'ol/ol.css';
 import Point from 'ol/geom/Point'
 import XYZ from 'ol/source/XYZ';
-import { Map, View } from 'ol';
+import {
+    Map,
+    View
+} from 'ol';
 import Circle from 'ol/geom/Circle';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import GeoJSON from 'ol/format/GeoJSON';
 import Feature from 'ol/Feature';
-import { Circle as CircleStyle, Fill, Stroke, Style, Text } from 'ol/style';
-import { Vector as VectorSource } from 'ol/source';
-import { Vector as VectorLayer } from 'ol/layer';
+import {
+    Circle as CircleStyle,
+    Fill,
+    Stroke,
+    Style,
+    Text
+} from 'ol/style';
+import {
+    Vector as VectorSource
+} from 'ol/source';
+import {
+    Vector as VectorLayer
+} from 'ol/layer';
 import LineString from 'ol/geom/LineString';
 import Overlay from 'ol/Overlay';
 import Icon from 'ol/style/Icon';
-import { makeRegular } from 'ol/geom/Polygon';
+import {
+    makeRegular
+} from 'ol/geom/Polygon';
 import GPX from 'ol/format/GPX';
-import {Control, defaults as defaultControls} from 'ol/control';
+import {
+    Control,
+    defaults as defaultControls
+} from 'ol/control';
 var arc = require('arc');
 var fs = require('fs');
 var JSZip = require("jszip");
 var zip = new JSZip();
-import { saveAs } from 'file-saver';
+import {
+    saveAs
+} from 'file-saver';
 
 require('dotenv').config();
 var maptiler_key = process.env.MAPTILER_KEY
@@ -32,16 +52,20 @@ Orte: https://www.latlong.net/place/cologne-germany-14658.html
     Po
 */
 /* get gpx from
-
+https://mapstogpx.com/ by copying link from google maps
 */
 /*
 var trip_name = "2020_atlantik"
 var color = "#3399cc"
 */
-
+/*
 var trip_name = "2019_china"
 var color = "#CC334C"
+*/
+var trip_name = "2018_k_asien"
+var color = "#CEF6EC"
 
+var color_foreground = "black"
 
 /* other colors https://www.htmlcsscolor.com/hex/3399CC#:~:text=HEX%20color%20%233399CC%2C%20Color%20name,%2D%20HTML%20CSS%20Color
 Triadic Colors
@@ -108,7 +132,10 @@ window.onload = function () {
     }
 
     // Canvas setup
-    var { createCanvas, loadImage } = require('canvas');
+    var {
+        createCanvas,
+        loadImage
+    } = require('canvas');
     var dist = 25
     var max_width = 100
 
@@ -130,44 +157,46 @@ window.onload = function () {
 
     // iteration
     for (var i = 0; i < trip.length; i++) {
-        
+
         // generate icon
         ctx_icon.beginPath();
         ctx_icon.fillStyle = color;
         ctx_icon.arc(canvas_icon.width / 2, canvas_icon.width / 2, radiusIcon, 0, 2.0 * Math.PI);
         ctx_icon.fill();
         ctx_icon.beginPath();
-        ctx_icon.strokeStyle = "#fff";
+        ctx_icon.strokeStyle = color_foreground;
         ctx_icon.arc(canvas_icon.width / 2, canvas_icon.width / 2, radiusIcon, 0, 2.0 * Math.PI);
         ctx_icon.stroke();
 
         ctx_icon.beginPath();
-        ctx_icon.fillStyle = "white";
+        ctx_icon.fillStyle = color_foreground;
         ctx_icon.font = "bold 14px sans-serif";
         ctx_icon.textAlign = "center";
         ctx_icon.fillText((i - iSkipped + 1).toString(), canvas_icon.width / 2, canvas_icon.width / 2 + 5);
 
-        
+
         // generate icon_hd hd
         ctx_icon_hd.beginPath();
         ctx_icon_hd.fillStyle = color;
-        ctx_icon_hd.arc(canvas_icon_hd.width / 2, canvas_icon_hd.width / 2, radiusIcon*4, 0, 2.0 * Math.PI);
+        ctx_icon_hd.arc(canvas_icon_hd.width / 2, canvas_icon_hd.width / 2, radiusIcon * 4, 0, 2.0 * Math.PI);
         ctx_icon_hd.fill();
         ctx_icon_hd.beginPath();
-        ctx_icon_hd.strokeStyle = "#fff";
+        ctx_icon_hd.strokeStyle = color_foreground;
         ctx_icon_hd.lineWidth = 4;
-        ctx_icon_hd.arc(canvas_icon_hd.width / 2, canvas_icon_hd.width / 2, radiusIcon*4, 0, 2.0 * Math.PI);
+        ctx_icon_hd.arc(canvas_icon_hd.width / 2, canvas_icon_hd.width / 2, radiusIcon * 4, 0, 2.0 * Math.PI);
         ctx_icon_hd.stroke();
 
         ctx_icon_hd.beginPath();
-        ctx_icon_hd.fillStyle = "white";
+        ctx_icon_hd.fillStyle = color_foreground;
         ctx_icon_hd.font = "bold 56px sans-serif";
         ctx_icon_hd.textAlign = "center";
         ctx_icon_hd.fillText((i - iSkipped + 1).toString(), canvas_icon_hd.width / 2, canvas_icon_hd.width / 2 + 20);
 
-        zip.file(i.toString()+"_"+trip[i].name+".png", canvas_icon_hd.toDataURL('image/png').split('base64,')[1], {base64: true})
+        zip.file(i.toString() + "_" + trip[i].name + ".png", canvas_icon_hd.toDataURL('image/png').split('base64,')[1], {
+            base64: true
+        })
         // draw icon on map if not skipped
-        if (trip[i].skip) { 
+        if (trip[i].skip) {
             iSkipped++
         } else {
             // draw icon in legend
@@ -176,12 +205,12 @@ window.onload = function () {
             ctx_legend.arc(dist * 0.75, (i - iSkipped + 0.75) * dist, radiusIcon, 0, 2.0 * Math.PI);
             ctx_legend.fill();
             ctx_legend.beginPath();
-            ctx_legend.strokeStyle = "#fff";
+            ctx_legend.strokeStyle = color_foreground;
             ctx_legend.arc(dist * 0.75, (i - iSkipped + 0.75) * dist, radiusIcon, 0, 2.0 * Math.PI);
             ctx_legend.stroke();
 
             ctx_legend.beginPath();
-            ctx_legend.fillStyle = "white";
+            ctx_legend.fillStyle = color_foreground;
             ctx_legend.font = "bold 14px sans-serif";
             ctx_legend.textAlign = "center";
             ctx_legend.fillText((i - iSkipped + 1).toString(), dist * 0.75, (i - iSkipped + 0.75) * dist + 5);
@@ -209,15 +238,16 @@ window.onload = function () {
                         anchor: [0.5, 1],
                         anchorXUnits: 'fraction',
                         anchorYUnits: 'fraction',
-                        src: canvas_icon.toDataURL('image/png'),//'data/icon.png',
-                    }),/*circleStyle,
-                    text: new Text({
-                        text: i.toString(),
-                        fill: new Fill({
-                            color: '#fff',
-                        }),
-                        font: 'bold 14px sans-serif'
-                    }),*/
+                        src: canvas_icon.toDataURL('image/png'), //'data/icon.png',
+                    }),
+                    /*circleStyle,
+                                        text: new Text({
+                                            text: i.toString(),
+                                            fill: new Fill({
+                                                color: '#fff',
+                                            }),
+                                            font: 'bold 14px sans-serif'
+                                        }),*/
                 });
                 iconNumberFeature.setStyle(iconNumberStyle)
                 vectorSourceIcon.addFeature(iconNumberFeature)
@@ -231,7 +261,7 @@ window.onload = function () {
 
                 vectorLayersGPX.push(new VectorLayer({
                     source: new VectorSource({
-                        url: 'data/trips/2020_atlantik/' + trip[i].route + '.gpx',
+                        url: 'data/trips/' + trip_name + '/' + trip[i].route + '.gpx',
                         format: new GPX(),
                     }),
                     style: styleFunctionLine
@@ -239,11 +269,16 @@ window.onload = function () {
             } else {
                 // trip data not available
                 // convert line to arc
-                var arcGenerator = new arc.GreatCircle(
-                    { x: loc[trip[i].name][1], y: loc[trip[i].name][0] },
-                    { x: loc[trip[i + 1].name][1], y: loc[trip[i + 1].name][0] }
-                );
-                var arcLine = arcGenerator.Arc(numArcPoints, { offset: 10 });
+                var arcGenerator = new arc.GreatCircle({
+                    x: loc[trip[i].name][1],
+                    y: loc[trip[i].name][0]
+                }, {
+                    x: loc[trip[i + 1].name][1],
+                    y: loc[trip[i + 1].name][0]
+                });
+                var arcLine = arcGenerator.Arc(numArcPoints, {
+                    offset: 10
+                });
                 var line = new LineString(arcLine.geometries[0].coords);
                 line.transform('EPSG:4326', 'EPSG:3857');
                 if (trip[i].route == "flight") {
@@ -339,7 +374,9 @@ window.onload = function () {
 
 
     //map.getView().fit(vectorSourceLines.getExtent(), {padding: [100, 100, 100, 100]});
-    map.getView().fit(vectorSourceIcon.getExtent(), { padding: [300, 300, 300, 300] });
+    map.getView().fit(vectorSourceIcon.getExtent(), {
+        padding: [300, 300, 300, 300]
+    });
 
 
     ctx_legend.fillStyle = "rgba(255,255,255,0.5)";
@@ -352,24 +389,28 @@ window.onload = function () {
     download.setAttribute("href", image);
     window.open(canvas_legend.toDataURL('image/png'));*/
 
-    
+
     //Download not possible for canvas with external sources
     //var image = mapCanvas.toDataURL().replace("image/png", "image/octet-stream");
     //window.open(mapCanvas.toDataURL('image/png'));
     //mapCanvas.toBlob(function (blob) {
     //    saveAs(blob, 'map.png');
     //})
-    
+
     //Download not possible for canvas with external sources
     //var mapCanvas = document.getElementsByTagName('canvas')[0]
     //zip.file("_canvas_" + trip_name + ".png", mapCanvas.toDataURL('image/png').split('base64,')[1], {base64: true})
-    zip.file("_legend_" + trip_name + ".png", canvas_legend.toDataURL('image/png').split('base64,')[1], {base64: true})
-        // Generate the zip file asynchronously
-    zip.generateAsync({type:"blob"})
-    .then(function(content) {
-        // Force down of the Zip file
-        saveAs(content, trip_name + ".zip");
-    });
+    zip.file("_legend_" + trip_name + ".png", canvas_legend.toDataURL('image/png').split('base64,')[1], {
+        base64: true
+    })
+    // Generate the zip file asynchronously
+    zip.generateAsync({
+            type: "blob"
+        })
+        .then(function (content) {
+            // Force down of the Zip file
+            saveAs(content, trip_name + ".zip");
+        });
 
     function shiftPoint(p_x, p_y, distance, b_x, b_y) {
         var x = p_x - b_x
@@ -405,10 +446,14 @@ var btnDownload = document.getElementById('download')
 btnDownload.addEventListener('click', () => {
     console.log(map)
     console.log(view)
-    view.fit(vectorSourceLines.getExtent(), { padding: [100, 100, 100, 100] });
+    view.fit(vectorSourceLines.getExtent(), {
+        padding: [100, 100, 100, 100]
+    });
 })
-document.getElementById('testButton').click(function(){
+document.getElementById('testButton').click(function () {
     console.log(map)
     console.log(view)
-    view.fit(vectorSourceLines.getExtent(), { padding: [100, 100, 100, 100] });
+    view.fit(vectorSourceLines.getExtent(), {
+        padding: [100, 100, 100, 100]
+    });
 });

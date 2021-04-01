@@ -1,0 +1,87 @@
+[
+    {
+        "name": "Düsseldorf",
+        "skip": true,
+        "route": "flight"
+    },
+    {
+        "name": "Dubai",
+        "skip": true,
+        "route": "flight"
+    },
+    {
+        "name": "Bangkok",
+        "route": "bangkok2chumphon"
+    },
+    {
+        "name": "Chumphon",
+        "skip": true
+    },
+    {
+        "name": "Ko Tao"
+    },
+    {
+        "name": "Ko Samui"
+    },
+    {
+        "name": "Surat Thani",
+        "skip": true,
+        "route": "suratthani2khaosok"
+    },
+    {
+        "name": "Khao Sok National Park",
+        "route": "suratthani2khaosok"
+    },    
+    {
+        "name": "Surat Thani",
+        "route": "flight",
+        "skip": true
+    },
+    {
+        "name": "Bangkok",
+        "route": "flight"
+    },
+    {
+        "name": "Siem Reap",
+        "route": "flight"
+    },
+    {
+        "name": "Da Nang",
+        "skip": true
+    },
+    {
+        "name": "Hội An",
+        "route": "hoian2hue"
+    },
+    {
+        "name": "Huế",
+        "route": "flight"
+    },
+    {
+        "name": "Hanoi",
+        "route": "hanoi2halong"
+    },
+    {
+        "name": "Hạ Long Bay",
+        "route": "hanoi2halong"
+    },
+    {
+        "name": "Hanoi",
+        "skip": true,
+        "route": "flight"
+    },
+    {
+        "name": "Bangkok",
+        "route": "flight"
+    },
+    {
+        "name": "Dubai",
+        "skip": true,
+        "route": "flight"
+    },
+    {
+        "name": "Düsseldorf",
+        "skip": true,
+        "route": "flight"
+    }
+]

@@ -1,0 +1,20 @@
+[
+    {
+        "name": "Düsseldorf",
+        "skip": true,
+        "route": "flight"
+    },
+    {
+        "name": "Dubai",
+        "skip": true,
+        "route": "flight"
+    },
+    {
+        "name": "Bangkok",
+        "route": "bg"
+    },
+    {
+        "name": "Chumphon",
+        "route": "bg"
+    }
+]

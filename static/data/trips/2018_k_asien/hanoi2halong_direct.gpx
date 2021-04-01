@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" creator="mapstogpx.com" version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd">
+  <metadata>
+    <link href="http://www.mapstogpx.com">
+      <text>Sverrir Sigmundarson</text>
+    </link>
+    <!--desc>Map data copyright 2021 Google</desc-->
+    <!--copyright author="Google Inc">
+    	<year>2021</year>
+    	<license>https://developers.google.com/maps/terms</license>
+    </copyright-->
+    <!--url>https://www.google.co.uk/maps/dir/Hanoi, Vietnam/Hạ Long Bay, Thành phố Hạ Long, Quảng Ninh, Vietnam/@20.8868108,105.9314844,9z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x3135008e13800a29:0x2987e416210b90d!2m2!1d105.8201408!2d21.0031177!1m5!1m1!1s0x314a5796518cee87:0x55c6b0bcc85478db!2m2!1d107.1839024!2d20.9100512!3e0?hl=en</url-->
+    <time>2021-03-13T12:25:46Z</time>
+  </metadata>
+  <wpt lat="21.0031177" lon="105.8201408">
+    <name>Hanoi</name>
+    <desc>Hanoi, Vietnam</desc>
+  </wpt>
+  <wpt lat="20.9100512" lon="107.1839024">
+    <name>Hạ Long Bay</name>
+    <desc>Hạ Long Bay, Thành phố Hạ Long, Quảng Ninh, Vietnam</desc>
+  </wpt>
+<rte>
+  <name>Hanoi to Hạ Long Bay</name>
+  <rtept lat="21.0031203" lon="105.8201385">
+    <name>RP001</name>
+  </rtept>
+  <rtept lat="21.0017737" lon="105.8181815">
+    <name>RP002</name>
+  </rtept>
+  <rtept lat="20.9917658" lon="105.8032666">
+    <name>RP003</name>
+  </rtept>
+  <rtept lat="20.9893519" lon="105.8045532">
+    <name>RP004</name>
+  </rtept>
+  <rtept lat="20.9872822" lon="105.8062993">
+    <name>RP005</name>
+  </rtept>
+  <rtept lat="20.9817276" lon="105.8912596">
+    <name>RP006</name>
+  </rtept>
+  <rtept lat="21.0084165" lon="105.9150452">
+    <name>RP007</name>
+  </rtept>
+  <rtept lat="21.0095688" lon="105.9163217">
+    <name>RP008</name>
+  </rtept>
+  <rtept lat="21.0095923" lon="105.9197044">
+    <name>RP009</name>
+  </rtept>
+  <rtept lat="20.8349904" lon="106.7509276">
+    <name>RP010</name>
+  </rtept>
+  <rtept lat="20.8389698" lon="106.7539797">
+    <name>RP011</name>
+  </rtept>
+  <rtept lat="20.9292146" lon="106.8592045">
+    <name>RP012</name>
+  </rtept>
+  <rtept lat="20.9303609" lon="106.8616883">
+    <name>RP013</name>
+  </rtept>
+  <rtept lat="20.9585782" lon="106.941254">
+    <name>RP014</name>
+  </rtept>
+  <rtept lat="20.9587096" lon="106.9472551">
+    <name>RP015</name>
+  </rtept>
+  <rtept lat="20.954804" lon="106.9813326">
+    <name>RP016</name>
+  </rtept>
+  <rtept lat="20.9590192" lon="107.0908342">
+    <name>RP017</name>
+  </rtept>
+  <rtept lat="20.9564048" lon="107.0935721">
+    <name>RP018</name>
+  </rtept>
+  <rtept lat="20.9524452" lon="107.1413653">
+    <name>RP019</name>
+  </rtept>
+  <rtept lat="20.952263" lon="107.1414199">
+    <name>RP020</name>
+  </rtept>
+  <rtept lat="20.9525701" lon="107.146528">
+    <name>RP021</name>
+  </rtept>
+  <rtept lat="20.9405468" lon="107.1514098">
+    <name>RP022</name>
+  </rtept>
+  <rtept lat="20.9400569" lon="107.1646466">
+    <name>RP023</name>
+  </rtept>
+</rte>
+</gpx>

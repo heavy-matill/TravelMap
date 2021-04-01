@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" creator="mapstogpx.com" version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd">
+  <metadata>
+    <link href="http://www.mapstogpx.com">
+      <text>Sverrir Sigmundarson</text>
+    </link>
+    <!--desc>Map data copyright 2021 Google</desc-->
+    <!--copyright author="Google Inc">
+    	<year>2021</year>
+    	<license>https://developers.google.com/maps/terms</license>
+    </copyright-->
+    <!--url>https://www.google.co.uk/maps/dir/Bangkok, Thailand/Chumphon, Thailand/@12.1294748,97.5808183,7z/am=t/data=!4m14!4m13!1m5!1m1!1s0x311d6032280d61f3:0x10100b25de24820!2m2!1d100.5017651!2d13.7563309!1m5!1m1!1s0x3056058eace858d5:0x10223bc2c364ce0!2m2!1d99.1800199!2d10.4930496!3e0?hl=en</url-->
+    <time>2021-03-13T12:55:20Z</time>
+  </metadata>
+  <wpt lat="13.7563309" lon="100.5017651">
+    <name>Bangkok</name>
+    <desc>Bangkok, Thailand</desc>
+  </wpt>
+  <wpt lat="10.4930496" lon="99.1800199">
+    <name>Chumphon</name>
+    <desc>Chumphon, Thailand</desc>
+  </wpt>
+<rte>
+  <name>Bangkok to Chumphon</name>
+  <rtept lat="13.7563631" lon="100.5017719">
+    <name>RP001</name>
+  </rtept>
+  <rtept lat="13.7568063" lon="100.5022566">
+    <name>RP002</name>
+  </rtept>
+  <rtept lat="13.75646" lon="100.5060158">
+    <name>RP003</name>
+  </rtept>
+  <rtept lat="13.7582672" lon="100.5095402">
+    <name>RP004</name>
+  </rtept>
+  <rtept lat="13.7616445" lon="100.5154362">
+    <name>RP005</name>
+  </rtept>
+  <rtept lat="13.7606586" lon="100.5167868">
+    <name>RP006</name>
+  </rtept>
+  <rtept lat="13.7573981" lon="100.5205821">
+    <name>RP007</name>
+  </rtept>
+  <rtept lat="13.7570907" lon="100.5211422">
+    <name>RP008</name>
+  </rtept>
+  <rtept lat="13.7579707" lon="100.5220926">
+    <name>RP009</name>
+  </rtept>
+  <rtept lat="13.7524321" lon="100.5229109">
+    <name>RP010</name>
+  </rtept>
+  <rtept lat="13.6949982" lon="100.5253373">
+    <name>RP011</name>
+  </rtept>
+  <rtept lat="13.68852" lon="100.522554">
+    <name>RP012</name>
+  </rtept>
+  <rtept lat="13.6739102" lon="100.5110862">
+    <name>RP013</name>
+  </rtept>
+  <rtept lat="13.6805464" lon="100.4728289">
+    <name>RP014</name>
+  </rtept>
+  <rtept lat="13.5925959" lon="100.3518573">
+    <name>RP015</name>
+  </rtept>
+  <rtept lat="13.3407497" lon="99.8365237">
+    <name>RP016</name>
+  </rtept>
+  <rtept lat="13.3232919" lon="99.8283284">
+    <name>RP017</name>
+  </rtept>
+  <rtept lat="12.9436874" lon="99.9033714">
+    <name>RP018</name>
+  </rtept>
+  <rtept lat="12.8111565" lon="99.9433933">
+    <name>RP019</name>
+  </rtept>
+  <rtept lat="12.5788051" lon="99.8665294">
+    <name>RP020</name>
+  </rtept>
+  <rtept lat="12.4151018" lon="99.9245019">
+    <name>RP021</name>
+  </rtept>
+  <rtept lat="11.0788338" lon="99.3701164">
+    <name>RP022</name>
+  </rtept>
+  <rtept lat="10.604009" lon="99.1666468">
+    <name>RP023</name>
+  </rtept>
+  <rtept lat="10.4986514" lon="99.1625321">
+    <name>RP024</name>
+  </rtept>
+  <rtept lat="10.4901769" lon="99.1772627">
+    <name>RP025</name>
+  </rtept>
+  <rtept lat="10.4914914" lon="99.1832016">
+    <name>RP026</name>
+  </rtept>
+</rte>
+</gpx>
